@@ -1,0 +1,3613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wipeout — River Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   WIPEOUT — Vibrant kinetic aesthetic
+   Bungee display · Outfit body · Space Mono accents
+   ========================================================= */
+:root {
+  --bg: #050a15;
+  --bg2: #0c1628;
+  --bg3: #16263f;
+  --ink: #f8fcff;
+  --ink-dim: rgba(248,252,255,.78);
+  --mute: rgba(248,252,255,.56);
+  --ink-faint: rgba(248,252,255,.22);
+  --panel: rgba(8,18,36,.7);
+  --panel-soft: rgba(16,28,54,.45);
+  --line: rgba(0,217,255,.18);
+  --line2: rgba(255,255,255,.08);
+  --glow: rgba(0,217,255,.4);
+
+  /* Brand palette — vibrant arcade-sport */
+  --cyan: #00d9ff;
+  --cyan-bright: #5eeaff;
+  --magenta: #ff3dd1;
+  --magenta-bright: #ff7ee0;
+  --yellow: #ffe03d;
+  --mint: #00ffaa;
+  --mint-bright: #5affcc;
+  --orange: #ff6b35;
+  --violet: #9d4eff;
+  --violet-bright: #c09cff;
+  --red: #ff3355;
+
+  /* Score/rank colors */
+  --gold: #ffd700;
+  --silver: #c0c8d4;
+  --bronze: #cd7f32;
+}
+
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; min-height:100vh; }
+body {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  overflow-x: hidden;
+}
+
+/* ===== Background ambient ===== */
+.bg-ambient {
+  position: fixed; inset: 0; z-index: -1; overflow: hidden;
+  pointer-events: none;
+}
+.bg-gradient {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 90% 60% at 15% 5%, rgba(0,217,255,.22), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 20%, rgba(255,61,209,.18), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 60% 95%, rgba(0,255,170,.14), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 20% 70%, rgba(157,78,255,.14), transparent 55%),
+    linear-gradient(165deg, var(--bg) 0%, var(--bg2) 55%, var(--bg) 100%);
+}
+.bg-noise {
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.01) 0 1px, transparent 1px 4px);
+  opacity: 0.8;
+  mix-blend-mode: overlay;
+}
+.bg-stripes {
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 78px,
+      rgba(0,217,255,.025) 78px 80px);
+  opacity: 0.6;
+  mask-image: linear-gradient(180deg, transparent, black 30%, black 70%, transparent);
+}
+/* flowing water animation */
+@keyframes flow-right {
+  from { background-position: 0 0; }
+  to   { background-position: 400px 0; }
+}
+
+/* ===== App shell ===== */
+.app {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 20px 22px 60px;
+  min-height: 100vh;
+  position: relative;
+}
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: 10px 18px;
+  background: rgba(8,18,36,.65);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  margin-bottom: 20px;
+  position: sticky; top: 12px;
+  z-index: 50;
+  box-shadow: 0 12px 40px -18px rgba(0,217,255,.4);
+}
+.brand { display:flex; align-items:center; gap:14px; }
+.brand-logo { width: 40px; height: 40px; flex-shrink: 0; }
+.brand-logo svg { display: block; width: 100%; height: 100%; }
+.brand-title {
+  font-family: 'Bungee', sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, var(--cyan-bright), var(--mint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  color: var(--mute);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.tools { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+/* ===== Buttons ===== */
+button {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .18s ease;
+  font-size: 14.5px;
+  letter-spacing: -0.005em;
+}
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.primary, .secondary, .ghost, .danger {
+  padding: 11px 20px;
+  border-radius: 12px;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.primary {
+  background: linear-gradient(135deg, var(--cyan), var(--mint));
+  color: #042230;
+  font-weight: 700;
+  box-shadow: 0 8px 24px -8px rgba(0,217,255,.6), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px -8px rgba(0,217,255,.8), inset 0 1px 0 rgba(255,255,255,.4);
+  filter: brightness(1.05);
+}
+.primary:active:not(:disabled) { transform: translateY(0); }
+
+.secondary {
+  background: rgba(255,255,255,.07);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+.secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,.14);
+  border-color: var(--cyan);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--ink-dim);
+  border: 1px solid var(--line2);
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+.ghost:hover { color: var(--ink); border-color: var(--cyan); background: rgba(0,217,255,.06); }
+.ghost.small { padding: 5px 10px; font-size: 11.5px; border-radius: 8px; }
+
+.danger {
+  background: linear-gradient(135deg, var(--red), var(--magenta));
+  color: white;
+  font-weight: 700;
+}
+
+/* ===== Panels ===== */
+.panel {
+  background: var(--panel);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 26px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.panel::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(165deg, rgba(0,217,255,.06) 0%, transparent 40%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.kicker {
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--cyan-bright);
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid rgba(0,217,255,.32);
+  border-radius: 100px;
+  background: rgba(0,217,255,.06);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+
+.panel-title {
+  font-family: 'Bungee', sans-serif;
+  font-size: 28px;
+  letter-spacing: 0.02em;
+  font-weight: normal;
+  color: var(--ink);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+/* Display title with optional subtitle via data-subtitle */
+.display-title {
+  font-family: 'Bungee', sans-serif;
+  font-size: clamp(44px, 8vw, 88px);
+  line-height: 0.95;
+  font-weight: normal;
+  letter-spacing: 0.01em;
+  margin: 0 0 14px;
+  background: linear-gradient(135deg, var(--cyan-bright) 0%, var(--mint) 40%, var(--yellow) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 60px rgba(0,217,255,.25);
+  position: relative;
+}
+.logo-type {
+  font-family: 'Bungee', sans-serif;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.display-title[data-subtitle]::after {
+  content: attr(data-subtitle);
+  display: block;
+  font-family: 'Space Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  color: var(--mint);
+  -webkit-text-fill-color: var(--mint);
+  background: none;
+  text-shadow: none;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.lead {
+  font-size: 16.5px;
+  color: var(--ink-dim);
+  max-width: 66ch;
+  line-height: 1.6;
+}
+.lead b { color: var(--ink); font-weight: 700; }
+
+.sub {
+  color: var(--mute);
+  font-size: 13.5px;
+}
+.mono {
+  font-family: 'Space Mono', monospace;
+}
+
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.row.end-right { justify-content: flex-end; }
+.hidden { display: none !important; }
+.text-input, input[type="text"], textarea {
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--line2);
+  color: var(--ink);
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14.5px;
+  width: 100%;
+  outline: none;
+  transition: all .18s ease;
+}
+.text-input:focus, input[type="text"]:focus, textarea:focus {
+  border-color: var(--cyan);
+  background: rgba(0,217,255,.05);
+  box-shadow: 0 0 0 3px rgba(0,217,255,.15);
+}
+
+hr.div {
+  border: none;
+  border-top: 1px solid var(--line2);
+  margin: 18px 0;
+}
+
+/* ===== Sync pill ===== */
+.sync-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: rgba(0,255,170,.12);
+  border: 1px solid rgba(0,255,170,.32);
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mint);
+  font-weight: 700;
+}
+.sync-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 10px var(--mint);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.sync-pill.off { background: rgba(255,51,85,.12); border-color: rgba(255,51,85,.3); color: var(--red); }
+.sync-pill.off .sync-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.sync-pill.warn { background: rgba(255,224,61,.12); border-color: rgba(255,224,61,.3); color: var(--yellow); }
+.sync-pill.warn .sync-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+
+/* ===== Home page ===== */
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+@media (max-width: 640px) {
+  .home-grid { grid-template-columns: 1fr; }
+}
+.home-option {
+  padding: 22px 20px;
+  background: rgba(16,28,54,.55);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  transition: all .2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.home-option:hover { border-color: var(--cyan); transform: translateY(-2px); }
+.home-option::after {
+  content: ''; position: absolute; top: -50px; right: -50px; width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(0,217,255,.15), transparent 60%);
+  pointer-events: none;
+}
+.home-option h3 {
+  font-family: 'Bungee', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.015em;
+  font-weight: normal;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+.home-option .h3-a { color: var(--cyan-bright); }
+.home-option .h3-b { color: var(--mint-bright); }
+
+.info-banner {
+  background: rgba(255,224,61,.08);
+  border: 1px solid rgba(255,224,61,.3);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  color: var(--ink-dim);
+}
+.info-banner b { color: var(--yellow); }
+.info-banner code {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--cyan-bright);
+  background: rgba(0,217,255,.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.error-banner {
+  background: rgba(255,51,85,.1);
+  border: 1px solid rgba(255,51,85,.4);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--red);
+  margin-top: 10px;
+}
+
+/* ===== Country picker ===== */
+.country-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+.country-pick {
+  padding: 12px 10px 10px;
+  background: rgba(255,255,255,.04);
+  border: 2px solid var(--line2);
+  border-radius: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .18s ease;
+  position: relative;
+}
+.country-pick:hover:not(.taken) {
+  border-color: var(--cyan);
+  background: rgba(0,217,255,.08);
+  transform: translateY(-2px);
+}
+.country-pick.selected {
+  border-color: var(--cyan-bright);
+  background: linear-gradient(135deg, rgba(0,217,255,.22), rgba(0,255,170,.08));
+  box-shadow: 0 0 0 3px rgba(0,217,255,.2), 0 14px 30px -14px rgba(0,217,255,.6);
+}
+.country-pick.taken { opacity: 0.3; cursor: not-allowed; }
+.country-pick .cc {
+  font-family: 'Bungee', sans-serif;
+  font-size: 22px;
+  margin-bottom: 2px;
+  letter-spacing: 0.02em;
+}
+.country-pick .nm { font-size: 11.5px; color: var(--mute); }
+.tag-taken {
+  position: absolute;
+  top: 5px; right: 5px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  background: var(--red);
+  color: white;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+/* ===== Room code / QR ===== */
+.room-code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 22px;
+  background: linear-gradient(135deg, rgba(0,217,255,.12), rgba(0,255,170,.04));
+  border: 1px solid rgba(0,217,255,.3);
+  border-radius: 20px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.room-code-big {
+  font-family: 'Bungee', sans-serif;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: transparent;
+  background: linear-gradient(135deg, var(--cyan-bright), var(--mint-bright));
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 0 60px rgba(0,217,255,.5);
+  margin: 4px 0 8px;
+  cursor: pointer;
+  user-select: all;
+}
+.join-url {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--mute);
+  word-break: break-all;
+  max-width: 420px;
+  line-height: 1.4;
+}
+.qr-box {
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.qr-box canvas, .qr-box img { display: block; }
+
+/* ===== Lobby ===== */
+.lobby-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.lobby-team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  transition: all .18s ease;
+}
+.lobby-team.offline { opacity: 0.5; }
+.lobby-team .flag {
+  font-family: 'Bungee', sans-serif;
+  font-size: 16px;
+  padding: 6px 10px;
+  background: rgba(0,217,255,.1);
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+  min-width: 50px;
+  text-align: center;
+}
+.lobby-team .team-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+.lobby-team .team-status {
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  font-weight: 700;
+}
+.lobby-slot-empty {
+  padding: 14px;
+  border: 1.5px dashed var(--line2);
+  border-radius: 14px;
+  color: var(--mute);
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  background: rgba(255,255,255,.015);
+}
+
+/* ===== Board / river ===== */
+.board-wrap {
+  position: relative;
+  background: linear-gradient(180deg, rgba(5,10,21,.6), rgba(16,38,63,.3));
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 20px 12px 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.board-wrap::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 60px,
+      rgba(0,217,255,.015) 60px 61px);
+  pointer-events: none;
+  animation: flow-right 6s linear infinite;
+}
+.board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.board-header h3 {
+  font-family: 'Bungee', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--cyan-bright);
+  margin: 0;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+.board-svg {
+  width: 100%;
+  display: block;
+  height: auto;
+}
+
+/* ===== Event banner ===== */
+.event-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(16,28,54,.6);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--magenta);
+  border-radius: 14px;
+  margin-bottom: 14px;
+}
+.event-banner.event-calm { border-left-color: var(--cyan); }
+.event-banner.event-spill { border-left-color: var(--orange); }
+.event-banner .evt-name {
+  font-family: 'Bungee', sans-serif;
+  font-size: 14px;
+  color: var(--magenta-bright);
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+.event-banner.event-calm .evt-name { color: var(--cyan-bright); }
+.event-banner.event-spill .evt-name { color: var(--orange); }
+.event-banner .evt-desc {
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+/* ===== Timer bar ===== */
+.timer-bar {
+  margin-top: 8px;
+  height: 6px;
+  background: rgba(255,255,255,.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--mint), var(--cyan));
+  border-radius: 4px;
+  transition: width 1s linear;
+  box-shadow: 0 0 12px var(--mint);
+}
+.timer-fill.warn { background: linear-gradient(90deg, var(--yellow), var(--orange)); box-shadow: 0 0 12px var(--yellow); }
+.timer-fill.crit { background: linear-gradient(90deg, var(--red), var(--magenta)); box-shadow: 0 0 12px var(--red); animation: pulse-dot 0.7s ease-in-out infinite; }
+.timer-num {
+  font-family: 'Bungee', sans-serif;
+  font-size: 22px;
+  color: var(--mint);
+  letter-spacing: 0.02em;
+}
+.timer-num.warn { color: var(--yellow); }
+.timer-num.crit { color: var(--red); animation: pulse-dot 0.7s ease-in-out infinite; }
+
+/* ===== Stats strip ===== */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+  padding: 14px;
+  background: rgba(8,18,36,.6);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin-bottom: 14px;
+}
+.stat {
+  text-align: center;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid transparent;
+}
+.stat .lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--mute);
+  font-weight: 700;
+}
+.stat .val {
+  font-family: 'Bungee', sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+.stat.cyan .val { color: var(--cyan-bright); }
+.stat.yellow .val { color: var(--yellow); }
+.stat.magenta .val { color: var(--magenta-bright); }
+.stat.mint .val { color: var(--mint); }
+
+/* ===== Dashboard layout ===== */
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .dashboard { grid-template-columns: 1fr; }
+}
+.dash-main { min-width: 0; }
+.dash-side { min-width: 0; }
+
+/* ===== Tracker (submission status) ===== */
+.tracker {
+  background: rgba(8,18,36,.5);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  position: sticky;
+  top: 80px;
+}
+.tracker h4 {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+.t-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  background: rgba(255,255,255,.02);
+  gap: 8px;
+}
+.t-row span:first-child { display:flex; align-items:center; gap:8px; flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.t-row .cc { font-family: 'Bungee', sans-serif; font-size: 11px; letter-spacing: 0.04em; }
+.t-row .chip {
+  padding: 3px 9px; border-radius: 100px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.t-row .chip.pending { background: rgba(255,224,61,.14); color: var(--yellow); }
+.t-row .chip.done { background: rgba(0,255,170,.16); color: var(--mint); }
+.t-row .chip.offline { background: rgba(255,51,85,.14); color: var(--red); }
+
+/* ===== Quiz panel ===== */
+.quiz-panel {
+  background: linear-gradient(135deg, rgba(157,78,255,.12), rgba(0,217,255,.06));
+  border: 1px solid rgba(157,78,255,.3);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.qkicker {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--violet-bright);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.qtext {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.35;
+}
+.quiz-opts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+.quiz-opt {
+  padding: 10px 14px;
+  background: rgba(255,255,255,.04);
+  border: 2px solid var(--line2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all .15s ease;
+  font-size: 13.5px;
+  color: var(--ink-dim);
+}
+.quiz-opt:hover {
+  border-color: var(--violet);
+  background: rgba(157,78,255,.1);
+  color: var(--ink);
+}
+.quiz-opt.selected { border-color: var(--violet-bright); background: rgba(157,78,255,.18); color: var(--ink); }
+.quiz-opt.correct {
+  border-color: var(--mint);
+  background: rgba(0,255,170,.18);
+  color: var(--mint);
+  font-weight: 700;
+}
+.quiz-opt.wrong {
+  border-color: var(--red);
+  background: rgba(255,51,85,.14);
+  color: var(--red);
+  text-decoration: line-through;
+}
+
+/* ===== Cards grid ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.card {
+  position: relative;
+  background: linear-gradient(165deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+  border: 2px solid var(--line2);
+  border-radius: 18px;
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: all .2s cubic-bezier(.2,.9,.3,1.1);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: -40%; left: -20%; right: -20%;
+  height: 140%;
+  background: radial-gradient(ellipse at center, var(--card-color, var(--cyan)) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity .2s ease;
+  pointer-events: none;
+}
+.card:hover:not(.disabled):not(.selected)::before { opacity: 0.12; }
+.card.selected {
+  border-color: var(--card-color, var(--cyan-bright));
+  background: linear-gradient(165deg, rgba(255,255,255,.16), rgba(255,255,255,.04));
+  transform: translateY(-4px);
+  box-shadow: 0 18px 35px -14px var(--card-color, var(--cyan));
+}
+.card.selected::before { opacity: 0.22; }
+.card.disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(0.6); }
+.card .card-icon {
+  font-size: 34px;
+  line-height: 1;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 16px var(--card-color, var(--cyan)));
+}
+.card .card-name {
+  font-family: 'Bungee', sans-serif;
+  font-size: 18px;
+  color: var(--card-color, var(--cyan-bright));
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+  line-height: 1.05;
+}
+.card .card-tagline {
+  font-family: 'Space Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.card .card-desc {
+  font-size: 12.5px;
+  color: var(--mute);
+  line-height: 1.45;
+  flex: 1;
+}
+.card .card-meta {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  background: rgba(255,51,85,.2);
+  color: var(--red);
+  border-radius: 100px;
+  border: 1px solid var(--red);
+}
+
+/* ===== Target chooser ===== */
+.target-chooser {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: rgba(255,61,209,.08);
+  border: 1px solid rgba(255,61,209,.35);
+  border-radius: 14px;
+}
+.target-chooser h5 {
+  font-family: 'Bungee', sans-serif;
+  font-size: 12px;
+  color: var(--magenta-bright);
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+.target-list {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.target-opt {
+  padding: 8px 13px;
+  background: rgba(255,255,255,.04);
+  border: 1.5px solid var(--line2);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all .15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.target-opt:hover { border-color: var(--magenta); background: rgba(255,61,209,.12); }
+.target-opt.selected {
+  border-color: var(--magenta-bright);
+  background: rgba(255,61,209,.22);
+  color: var(--ink);
+  font-weight: 700;
+}
+.target-opt span { font-family: 'Bungee', sans-serif; font-size: 11px; letter-spacing: 0.04em; }
+
+/* ===== Reveal stage ===== */
+.reveal-stage {
+  text-align: center;
+  padding: 18px 10px;
+}
+.reveal-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  max-width: 1100px;
+  margin: 16px auto 0;
+  text-align: left;
+}
+.reveal-card {
+  background: rgba(16,28,54,.55);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  position: relative;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: revealPop .5s cubic-bezier(.2,.9,.3,1.2) forwards;
+}
+@keyframes revealPop {
+  0% { opacity: 0; transform: translateY(30px) scale(.9); }
+  65% { transform: translateY(-5px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.reveal-card.me { border-color: var(--cyan); background: rgba(0,217,255,.06); }
+.reveal-card.sabotaged { border-color: var(--red); animation: revealPop .5s cubic-bezier(.2,.9,.3,1.2) forwards, shake-hit .4s ease-in-out 0.5s; }
+@keyframes shake-hit {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px) rotate(-1deg); }
+  40%, 80% { transform: translateX(6px) rotate(1deg); }
+}
+.reveal-card.winner {
+  border-color: var(--yellow);
+  background: linear-gradient(135deg, rgba(255,224,61,.14), rgba(16,28,54,.55));
+  box-shadow: 0 0 0 2px var(--yellow), 0 18px 40px -10px rgba(255,224,61,.4);
+}
+.reveal-card h5 {
+  font-family: 'Bungee', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+.rc-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,.25);
+  border: 1.5px solid var(--card-color, var(--line));
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.rc-icon { font-size: 22px; filter: drop-shadow(0 0 8px var(--card-color, var(--cyan))); }
+.rc-name {
+  font-family: 'Bungee', sans-serif;
+  font-size: 14px;
+  color: var(--card-color, var(--cyan-bright));
+  letter-spacing: 0.04em;
+}
+.rc-events {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 10px;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.rc-events li {
+  padding: 2px 0 2px 12px;
+  color: var(--ink-dim);
+  position: relative;
+}
+.rc-events li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--cyan);
+}
+.rc-events li.sabotage-in, .rc-events li.sprint-hit, .rc-events li.slow { color: var(--red); }
+.rc-events li.sabotage-in::before, .rc-events li.sprint-hit::before { color: var(--red); }
+.rc-events li.sabotage-out { color: var(--magenta-bright); }
+.rc-events li.sabotage-out::before { color: var(--magenta-bright); }
+.rc-events li.sabotage-blocked, .rc-events li.shield { color: var(--cyan-bright); }
+.rc-events li.sabotage-blocked::before, .rc-events li.shield::before { color: var(--cyan-bright); }
+.rc-events li.scoop, .rc-events li.quiz, .rc-events li.event-bonus { color: var(--mint); }
+.rc-events li.scoop::before, .rc-events li.quiz::before, .rc-events li.event-bonus::before { color: var(--mint); }
+.rc-events li.hazard, .rc-events li.patrol { color: var(--orange); }
+.rc-events li.hazard::before, .rc-events li.patrol::before { color: var(--orange); }
+.rc-events li.brake { color: var(--violet-bright); }
+.rc-events li.brake::before { color: var(--violet-bright); }
+.rc-move {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line2);
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+.rc-move b {
+  font-family: 'Bungee', sans-serif;
+  color: var(--cyan-bright);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+/* ===== Podium / Final ===== */
+.podium {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 14px;
+  margin: 28px 0 20px;
+  align-items: end;
+}
+@media (max-width: 600px) {
+  .podium { grid-template-columns: 1fr; }
+}
+.pod {
+  padding: 20px 14px 24px;
+  border-radius: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--line);
+  background: linear-gradient(165deg, rgba(16,28,54,.85), rgba(8,18,36,.6));
+}
+.pod.first {
+  min-height: 220px;
+  border-color: var(--yellow);
+  background: linear-gradient(165deg, rgba(255,224,61,.22), rgba(16,28,54,.75));
+  box-shadow: 0 0 0 2px var(--yellow), 0 30px 60px -10px rgba(255,224,61,.4);
+}
+.pod.first .rank { color: var(--yellow); font-size: 64px; }
+.pod.second {
+  min-height: 180px;
+  border-color: var(--cyan);
+  background: linear-gradient(165deg, rgba(0,217,255,.18), rgba(16,28,54,.75));
+}
+.pod.second .rank { color: var(--cyan-bright); }
+.pod.third {
+  min-height: 160px;
+  border-color: var(--orange);
+  background: linear-gradient(165deg, rgba(255,107,53,.18), rgba(16,28,54,.75));
+}
+.pod.third .rank { color: var(--orange); }
+.pod .rank {
+  font-family: 'Bungee', sans-serif;
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 8px;
+  font-weight: normal;
+  letter-spacing: 0.02em;
+}
+.pod .name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.pod .country-tag {
+  font-family: 'Bungee', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  margin: 6px 0;
+  opacity: 0.9;
+}
+.pod .score {
+  font-family: 'Bungee', sans-serif;
+  font-size: 28px;
+  margin-top: 6px;
+  color: var(--mint);
+  letter-spacing: 0.02em;
+}
+.pod.first .score { color: var(--yellow); }
+
+.final-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.final-row {
+  display: grid;
+  grid-template-columns: 40px auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.04);
+  border-radius: 12px;
+  border-left: 4px solid var(--line);
+}
+.final-row.me { background: rgba(0,217,255,.1); border-left-color: var(--cyan); }
+.final-row .pos { font-family: 'Bungee', sans-serif; font-size: 16px; color: var(--mute); letter-spacing: 0.02em; }
+.final-row .cc {
+  font-family: 'Bungee', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  background: rgba(0,217,255,.12);
+  border-radius: 6px;
+}
+.final-row .nm { font-weight: 600; }
+.final-row .sc {
+  font-family: 'Bungee', sans-serif;
+  color: var(--mint);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+/* ===== Modal ===== */
+.modal-bg {
+  position: fixed; inset: 0;
+  background: rgba(5,10,21,.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 200;
+  padding: 20px;
+}
+.modal-bg.open { opacity: 1; pointer-events: auto; }
+.modal {
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--bg2), var(--bg));
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+}
+.modal h3 {
+  font-family: 'Bungee', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  color: var(--cyan-bright);
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+.modal ol {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  counter-reset: step;
+}
+.modal ol li {
+  padding: 10px 12px 10px 42px;
+  position: relative;
+  border-bottom: 1px solid var(--line2);
+}
+.modal ol li:last-child { border-bottom: none; }
+.modal ol li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 10px;
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--cyan), var(--mint));
+  color: #042230;
+  font-family: 'Bungee', sans-serif;
+  font-size: 13px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal ol li strong {
+  font-family: 'Bungee', sans-serif;
+  font-size: 14px;
+  color: var(--cyan-bright);
+  letter-spacing: 0.03em;
+  display: block;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+.modal ol li p {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.modal p.sub b { color: var(--ink); }
+
+/* ===== Footer ===== */
+.footer-note {
+  text-align: center;
+  margin-top: 30px;
+  color: var(--mute);
+  font-size: 12.5px;
+  font-style: italic;
+  font-family: 'Outfit', sans-serif;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 700px) {
+  .app { padding: 14px 14px 40px; }
+  .panel { padding: 20px 18px; border-radius: 18px; }
+  .topbar { padding: 8px 12px; top: 8px; }
+  .room-code-wrap { padding: 16px; gap: 14px; }
+  .room-code-big { font-size: 44px; }
+  .display-title { font-size: 50px; }
+  .panel-title { font-size: 22px; }
+  .card { min-height: 140px; padding: 12px 10px; }
+  .card .card-icon { font-size: 28px; margin-bottom: 6px; }
+  .card .card-name { font-size: 15px; }
+  .brand-title { font-size: 18px; }
+  .brand-sub { font-size: 9.5px; }
+  .stat .val { font-size: 22px; }
+  .pod .rank { font-size: 34px; }
+  .pod.first .rank { font-size: 48px; }
+  .tracker { position: static; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="bg-ambient">
+  <div class="bg-gradient"></div>
+  <div class="bg-noise"></div>
+  <div class="bg-stripes"></div>
+</div>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#a3e635"/>
+            </linearGradient>
+          </defs>
+          <path d="M4 20 Q 10 10, 20 20 T 36 20" stroke="url(#logoGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <path d="M4 26 Q 10 16, 20 26 T 36 26" stroke="url(#logoGrad)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+          <circle cx="30" cy="14" r="2.5" fill="#facc15"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">WIPEOUT</div>
+        <div class="brand-sub">River Race · Guardians of our Waters</div>
+      </div>
+    </div>
+    <div class="tools">
+      <span id="syncPill" class="sync-pill hidden"><span class="sync-dot"></span><span id="syncText">Live</span></span>
+      <button class="ghost" id="audioToggle">🔊 On</button>
+      <button class="ghost" id="howToBtn">How to Play</button>
+      <button class="ghost hidden" id="leaveBtn">Leave</button>
+    </div>
+  </header>
+
+  <main id="stage"></main>
+
+  <div class="footer-note" id="footerFlavor">The river is watching.</div>
+</div>
+
+<div id="modalBg" class="modal-bg" role="dialog" aria-modal="true" aria-hidden="true">
+  <div id="modal" class="modal"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, update, onValue, onDisconnect, push, remove, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// Firebase config — hardcoded here so every device that opens the page works immediately.
+// localStorage override is also supported for custom deployments.
+let FIREBASE_CONFIG = {
+  "apiKey": "AIzaSyBQRJVi3QZsJlvee7HQFrpw7dXwPLhswVU",
+  "authDomain": "confluence-bb9b2.firebaseapp.com",
+  "databaseURL": "https://confluence-bb9b2-default-rtdb.europe-west1.firebasedatabase.app",
+  "projectId": "confluence-bb9b2",
+  "storageBucket": "confluence-bb9b2.firebasestorage.app",
+  "messagingSenderId": "457430377288",
+  "appId": "1:457430377288:web:34f14ccec6fcace5db897d",
+  "measurementId": "G-MMD3GWJE80"
+};
+try {
+  const stored = JSON.parse(localStorage.getItem('wipeout.fbcfg') || 'null');
+  if (stored && stored.apiKey) FIREBASE_CONFIG = stored;
+} catch(e){}
+
+// ===== Utilities =====
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+const stage = $('#stage');
+const modalBg = $('#modalBg');
+const modal  = $('#modal');
+const rand = (min,max)=> Math.random()*(max-min)+min;
+const randInt = (min,max)=> Math.floor(rand(min,max+0.999));
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const shuffle = arr => { const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi, v));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function setFooter(text){ $('#footerFlavor').textContent = text; }
+
+// ===== Audio (Web Audio synth) =====
+let audioCtx=null, masterGain=null, ambientNodes=[];
+function unlockAudio(){
+  if (audioCtx) return;
+  try{
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    masterGain = audioCtx.createGain(); masterGain.gain.value = 0.18;
+    masterGain.connect(audioCtx.destination);
+  } catch(e){ audioCtx=null; }
+}
+function tone(freq, dur, type, gain, when){
+  freq = freq||440; dur = dur||0.12; type = type||'sine'; gain = gain||0.03; when = when||0;
+  if (!audioCtx || !localState.audioEnabled) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type=type; o.frequency.value=freq; g.gain.value=0;
+  o.connect(g); g.connect(masterGain);
+  const t = audioCtx.currentTime+when;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(gain, t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.start(t); o.stop(t+dur+0.02);
+}
+function sweep(fromHz, toHz, dur, type, gain, when){
+  if (!audioCtx || !localState.audioEnabled) return;
+  when = when||0;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type=type||'sawtooth'; g.gain.value = 0;
+  o.connect(g); g.connect(masterGain);
+  const t = audioCtx.currentTime+when;
+  o.frequency.setValueAtTime(fromHz, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(40,toHz), t+dur);
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(gain||0.03, t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.start(t); o.stop(t+dur+0.02);
+}
+function noiseHit(dur, gain, when){
+  if (!audioCtx || !localState.audioEnabled) return;
+  when = when||0;
+  const bufferSize = Math.floor(audioCtx.sampleRate * (dur||0.2));
+  const buf = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=1200; filt.Q.value=0.7;
+  const g = audioCtx.createGain(); g.gain.value = gain||0.04;
+  src.connect(filt); filt.connect(g); g.connect(masterGain);
+  src.start(audioCtx.currentTime+when);
+}
+function playClick(){ tone(680, 0.05, 'triangle', 0.02); }
+function playSelect(){ tone(880, 0.06, 'sine', 0.025); tone(1320,0.04,'sine',0.015,0.02); }
+function playCardFlip(){ noiseHit(0.08, 0.025); tone(600+Math.random()*200, 0.04, 'triangle', 0.02, 0.03); }
+function playPaddle(){ noiseHit(0.12, 0.045); tone(330, 0.15, 'sine', 0.025, 0.04); }
+function playSprint(){ sweep(200, 900, 0.3, 'sawtooth', 0.04); noiseHit(0.15, 0.04, 0.05); }
+function playClean(){ tone(660, 0.08, 'triangle', 0.03); tone(880, 0.1, 'triangle', 0.025, 0.06); tone(1100, 0.12, 'sine', 0.02, 0.14); }
+function playShield(){ tone(300, 0.1, 'square', 0.02); tone(450, 0.15, 'square', 0.018, 0.03); }
+function playSabotage(){ sweep(700, 120, 0.4, 'sawtooth', 0.04); }
+function playSurge(){ [262, 330, 392, 523].forEach((f,i)=> tone(f, 0.15, 'triangle', 0.025, i*0.06)); }
+function playWin(){ [523, 659, 784, 1047].forEach((f,i)=> tone(f, 0.4, 'sine', 0.035, i*0.12)); }
+function playLose(){ sweep(440, 110, 0.6, 'triangle', 0.03); }
+function playCountdown(){ tone(880, 0.06, 'sine', 0.02); }
+function playReveal(){ noiseHit(0.06, 0.02); tone(1200, 0.05, 'triangle', 0.02, 0.02); }
+// Additional named sounds used by screens
+function playTransition(){ tone(440, 0.08, 'sine', 0.02); tone(660, 0.12, 'sine', 0.02, 0.05); }
+function playCorrect(){ [523, 659, 784, 1047].forEach((f,i)=> tone(f, 0.18, 'triangle', 0.025, i*0.05)); }
+function playWrong(){ tone(200, 0.15, 'sawtooth', 0.03); tone(180, 0.2, 'sawtooth', 0.025, 0.08); }
+function playPulse(){ tone(330, 0.18, 'sine', 0.02); tone(440, 0.22, 'sine', 0.018, 0.08); }
+function playFanfare(){
+  const notes = [523, 659, 784, 1047, 1319];
+  notes.forEach((f,i)=> tone(f, 0.35, 'triangle', 0.03, i*0.09));
+  // Sparkle
+  for (let i=0;i<10;i++) tone(1200 + Math.random()*800, 0.08, 'sine', 0.015, 0.7 + i*0.06);
+}
+function ambientStart(){
+  if (!audioCtx || ambientNodes.length) return;
+  // Soft river sound — filtered noise
+  const bufferSize = audioCtx.sampleRate * 2;
+  const buf = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1)*0.3;
+  const src = audioCtx.createBufferSource(); src.buffer = buf; src.loop = true;
+  const filt = audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=800; filt.Q.value=0.5;
+  const g = audioCtx.createGain(); g.gain.value = 0.008;
+  src.connect(filt); filt.connect(g); g.connect(masterGain);
+  src.start();
+  ambientNodes = [src, filt, g];
+}
+function ambientStop(){
+  ambientNodes.forEach(n => { try{ if (n.stop) n.stop(); else n.disconnect(); } catch(e){} });
+  ambientNodes = [];
+}
+
+// ===== Game data =====
+// =========================================================
+// WIPEOUT — Game data
+// =========================================================
+
+// Countries (same 6 eTwinning countries)
+const NATIONS = [
+  { code:'IT', name:'Italy',    color:'#ff3dd1', emoji:'🇮🇹' },
+  { code:'ES', name:'Spain',    color:'#ffe03d', emoji:'🇪🇸' },
+  { code:'GR', name:'Greece',   color:'#00d9ff', emoji:'🇬🇷' },
+  { code:'FR', name:'France',   color:'#9d4eff', emoji:'🇫🇷' },
+  { code:'SK', name:'Slovakia', color:'#00ffaa', emoji:'🇸🇰' },
+  { code:'BG', name:'Bulgaria', color:'#ff6b35', emoji:'🇧🇬' }
+];
+
+// ==========================================================
+// ACTION CARDS
+// Every team has the same 6 cards. No randomness in the hand.
+// Each card gets a cooldown after use (1 round).
+// Sabotage has a global limit per game (3 uses).
+// ==========================================================
+const CARDS = [
+  {
+    id:'paddle',
+    name:'PADDLE',
+    icon:'🚣',
+    color:'#00d9ff',
+    tagline:'+2 tiles · reliable',
+    desc:'Steady forward motion. Nothing fancy. Rarely regretted.',
+    cooldown:0
+  },
+  {
+    id:'sprint',
+    name:'SPRINT',
+    icon:'💨',
+    color:'#00ffaa',
+    tagline:'+3 tiles · exposed',
+    desc:'Biggest single move. But if anyone sabotages you and you are not shielded, it hurts extra.',
+    cooldown:1
+  },
+  {
+    id:'scoop',
+    name:'SCOOP',
+    icon:'🗑️',
+    color:'#ffe03d',
+    tagline:'0 tiles · +2 tokens',
+    desc:'Fish garbage out of the water. No movement, but tokens are points at the end.',
+    cooldown:0
+  },
+  {
+    id:'shield',
+    name:'SHIELD',
+    icon:'🛡️',
+    color:'#9d4eff',
+    tagline:'+1 tile · blocks sabotage',
+    desc:'Defensive posture. Any sabotage targeting you this round fizzles uselessly.',
+    cooldown:1
+  },
+  {
+    id:'sabotage',
+    name:'SABOTAGE',
+    icon:'💥',
+    color:'#ff3dd1',
+    tagline:'-3 tiles to target · limited',
+    desc:'Pick an enemy team. They move backward 3 tiles. Blocked by their shield. You have 3 per game.',
+    cooldown:1,
+    gameLimit:3,
+    needsTarget:true
+  },
+  {
+    id:'brake',
+    name:'BRAKE',
+    icon:'⚓',
+    color:'#ff6b35',
+    tagline:'0 tiles · immune next round',
+    desc:'Drop anchor. No movement this round, but next round you cannot be sabotaged.',
+    cooldown:2
+  }
+];
+const CARD_BY_ID = Object.fromEntries(CARDS.map(c => [c.id, c]));
+
+// ==========================================================
+// RIVER SEGMENTS — 5 segments × 6 tiles = 30 tiles
+// ==========================================================
+const SEGMENTS = [
+  {
+    id:'source',
+    name:'Alpine Source',
+    tiles:[1,2,3,4,5,6],
+    tint:'#00d9ff',
+    blurb:'Clean, cold, glacial runoff. Nothing much happens here — yet.'
+  },
+  {
+    id:'rapids',
+    name:'The Rapids',
+    tiles:[7,8,9,10,11,12],
+    tint:'#00ffaa',
+    blurb:'Fast water, rocks, surprise eddies. Movement feels powerful. So does losing control.'
+  },
+  {
+    id:'industrial',
+    name:'Industrial Zone',
+    tiles:[13,14,15,16,17,18],
+    tint:'#ff6b35',
+    blurb:'A corridor of factories, runoff pipes, and suspicious foam. Cleanup is lucrative. Lingering is unwise.'
+  },
+  {
+    id:'reeds',
+    name:'The Reeds',
+    tiles:[19,20,21,22,23,24],
+    tint:'#9d4eff',
+    blurb:'Slow, tangled, wildlife-heavy. Shields glow stronger here. Sprinting rarely ends well.'
+  },
+  {
+    id:'delta',
+    name:'The Delta',
+    tiles:[25,26,27,28,29,30],
+    tint:'#ffe03d',
+    blurb:'Brackish, wide, quietly beautiful. First team to tile 30 triggers the final scoring.'
+  }
+];
+
+function segmentForTile(t){
+  return SEGMENTS.find(s => s.tiles.includes(t)) || SEGMENTS[0];
+}
+
+// ==========================================================
+// HAZARD TILES — specific tiles have specific effects when a raft lands or passes
+// ==========================================================
+const HAZARD_TILES = {
+  // 3: small eddy — nothing
+  8:  { id:'whirlpool', name:'WHIRLPOOL',    effect:'shuffle',    desc:'Random +/- 2 tiles.' },
+  11: { id:'rocks',     name:'ROCK GARDEN',  effect:'stall',      desc:'-1 tile this round.' },
+  14: { id:'oil',       name:'OIL SLICK',    effect:'lose_token', desc:'-1 cleanup token.' },
+  16: { id:'scoopzone', name:'DEBRIS FIELD', effect:'bonus_token',desc:'+2 cleanup tokens.' },
+  17: { id:'plastic',   name:'PLASTIC PATCH',effect:'slow',       desc:'Movement halved next round.' },
+  21: { id:'reeds',     name:'TANGLED REEDS',effect:'stall',      desc:'-1 tile this round.' },
+  23: { id:'otter',     name:'OTTER CAMP',   effect:'bonus_token',desc:'+1 cleanup token.' },
+  26: { id:'sandbar',   name:'SANDBAR',      effect:'stall',      desc:'-1 tile this round.' }
+};
+
+// ==========================================================
+// QUIZ QUESTIONS — water science & European rivers
+// One is drawn each round. +1 token for correct answer.
+// ==========================================================
+const QUIZ = [
+  {
+    q:'Which European river flows through the most countries?',
+    opts:['The Rhine','The Danube','The Volga','The Thames'],
+    answer:1,
+    fact:'The Danube passes through 10 countries — the most of any river in the world.'
+  },
+  {
+    q:'Eutrophication is caused mainly by:',
+    opts:['Oil spills','Excess nitrogen and phosphorus','Plastic waste','Warm water'],
+    answer:1,
+    fact:'Fertilizer runoff causes algal blooms that starve water of oxygen. Classic case of "too much of a good thing".'
+  },
+  {
+    q:'A healthy river typically has a pH of:',
+    opts:['3 to 4','6.5 to 8.5','9 to 10','It does not matter'],
+    answer:1,
+    fact:'Most freshwater life is adapted to near-neutral pH. Acidic or alkaline water kills indicator species first.'
+  },
+  {
+    q:'Which of these is NOT a bioindicator of clean water?',
+    opts:['Mayfly larvae','Stonefly larvae','Tubifex worms','Caddisfly larvae'],
+    answer:2,
+    fact:'Tubifex worms thrive in low-oxygen polluted mud. If you see only them, the news is bad.'
+  },
+  {
+    q:'The "good ecological status" label in EU waters comes from:',
+    opts:['The Paris Agreement','The Water Framework Directive','UNESCO','The Blue Flag programme'],
+    answer:1,
+    fact:'The 2000 WFD requires all EU surface waters to reach "good status". Progress is... mixed.'
+  },
+  {
+    q:'Microplastics in freshwater mostly come from:',
+    opts:['Shipping containers','Synthetic clothing fibers and tyres','Sunscreen','Glass bottles'],
+    answer:1,
+    fact:'Every laundry cycle sheds thousands of microfibres. Tyre wear is the other giant contributor.'
+  },
+  {
+    q:'Dissolved oxygen in water is lowest when:',
+    opts:['Water is cold and fast','Water is warm and still','pH is neutral','At night, regardless of temperature'],
+    answer:1,
+    fact:'Warm water holds less O₂, and still water has no mixing. Heatwaves on stagnant rivers = fish kills.'
+  },
+  {
+    q:'Which sector is the largest freshwater user in Europe?',
+    opts:['Households','Industry','Agriculture','Tourism'],
+    answer:2,
+    fact:'Agriculture uses about a quarter of EU water. In southern Europe, much higher.'
+  },
+  {
+    q:'Which of these is a "combined sewer overflow"?',
+    opts:[
+      'A planned industrial discharge',
+      'Raw sewage mixing with stormwater into rivers after heavy rain',
+      'A treatment plant upgrade',
+      'A type of water tax'
+    ],
+    answer:1,
+    fact:'Older cities still mix rain runoff and sewage in one pipe. Big storms → raw discharge. Not ideal.'
+  },
+  {
+    q:'The main threat of thermal pollution to rivers is:',
+    opts:['Frozen banks','Reduced oxygen and species shifts','Evaporation','Flooding'],
+    answer:1,
+    fact:'Warmer water = less oxygen + native species replaced by warm-water tolerant invaders.'
+  },
+  {
+    q:'What is "greywater"?',
+    opts:[
+      'Water from kitchens and toilets',
+      'Lightly used water from sinks, showers, and laundry',
+      'Stormwater runoff',
+      'Polluted industrial water'
+    ],
+    answer:1,
+    fact:'Greywater (not from toilets) can be reused for flushing or irrigation with simple filtration.'
+  },
+  {
+    q:'Nitrate pollution in drinking water is mainly linked to:',
+    opts:['Rock erosion','Agricultural runoff','Atmospheric deposition','Hot springs'],
+    answer:1,
+    fact:'Excess fertilizer leaches into groundwater. Nitrate over 50 mg/L is unsafe to drink.'
+  },
+  {
+    q:'Which of these rivers had a famous "death and rebirth" story in Europe?',
+    opts:['Tagus','Thames','Tiber','Tevere'],
+    answer:1,
+    fact:'The Thames was declared "biologically dead" in 1957. Decades of cleanup — seals and salmon are back.'
+  },
+  {
+    q:'BOD (Biological Oxygen Demand) measures:',
+    opts:[
+      'How salty water is',
+      'How much oxygen microbes need to break down organic matter',
+      'How fast water flows',
+      'How deep a river is'
+    ],
+    answer:1,
+    fact:'High BOD means lots of decaying matter — bacteria eat it all, suffocating fish in the process.'
+  },
+  {
+    q:'A "riparian zone" is:',
+    opts:[
+      'A deep-sea region',
+      'The vegetation along a river bank',
+      'A protected fish species',
+      'An industrial wastewater permit'
+    ],
+    answer:1,
+    fact:'Healthy riparian strips filter pollution and stabilize banks. Destroying them is how floods get worse.'
+  },
+  {
+    q:'Which is the most widely found freshwater pollutant in Europe, by occurrence?',
+    opts:['Mercury','Pharmaceuticals and PFAS','Lead','Sulfur'],
+    answer:1,
+    fact:'"Forever chemicals" and drug residues now show up in essentially every tested European water body.'
+  },
+  {
+    q:'River ice breakup floods are worsened by:',
+    opts:['Clean water','Warming winters','Bioindicators','Dams'],
+    answer:1,
+    fact:'Mild winters = thinner, more fragile ice = unpredictable spring breakups. More damage, less warning.'
+  },
+  {
+    q:'What does "turbidity" measure?',
+    opts:[
+      'Water temperature',
+      'How cloudy or clear water is',
+      'How salty water is',
+      'The flow speed'
+    ],
+    answer:1,
+    fact:'Sediment, plankton, and pollution all scatter light. Crystal-clear water is not always healthy water, though.'
+  },
+  {
+    q:'Which practice reduces agricultural runoff most effectively?',
+    opts:[
+      'Removing hedges',
+      'Cover crops and buffer strips',
+      'Deeper ploughing',
+      'Plastic mulching'
+    ],
+    answer:1,
+    fact:'Keeping something growing year-round holds soil, water, and nutrients where they belong.'
+  },
+  {
+    q:'Which of these is a free, public European water-quality database?',
+    opts:['Google Earth','EEA Water Information System (WISE)','OpenStreetMap','Copernicus'],
+    answer:1,
+    fact:'WISE pools water-quality data from every EU member state. Open, free, surprisingly useful.'
+  },
+  {
+    q:'Invasive species spread in freshwater mainly via:',
+    opts:[
+      'Rainfall',
+      'Ballast water, anglers, and aquarium dumping',
+      'Hydro dams',
+      'Tourism photography'
+    ],
+    answer:1,
+    fact:'Species hitchhike in bilges, bait buckets, and unwanted pets. Zebra mussels, killer shrimp — it is a list.'
+  },
+  {
+    q:'What is "stormwater first flush"?',
+    opts:[
+      'The cleanest water of a storm',
+      'The first heavy runoff, carrying accumulated pollutants',
+      'A municipal tax',
+      'An industrial permit'
+    ],
+    answer:1,
+    fact:'The first minutes of rain sweep road oils, metals, and litter straight into rivers. Dirtiest flow of the storm.'
+  },
+  {
+    q:'Heavy metals in rivers tend to accumulate mostly in:',
+    opts:['Water vapour','Sediments','Surface foam','Rain'],
+    answer:1,
+    fact:'Metals bind to fine sediments, then travel up the food chain. Bottom-feeders concentrate them first.'
+  },
+  {
+    q:'Which EU project connects schools on environmental action?',
+    opts:['Horizon Free','eTwinning','Eurydice','SchoolNet'],
+    answer:1,
+    fact:'eTwinning links 200,000+ schools across Europe for joint projects. You are using it right now.'
+  }
+];
+
+// ==========================================================
+// HAZARD EVENTS — dramatic one-off things that happen at specific rounds
+// Drawn in order. Each flavour-describes the context.
+// ==========================================================
+const EVENTS = [
+  { id:'ev_calm',     name:'CALM WATERS',     desc:'The river rolls gently. Nothing wild this round.' },
+  { id:'ev_spill',    name:'CHEMICAL SPILL',  desc:'A tanker upstream burst a valve. Something is in the water — and it is not dinner.' },
+  { id:'ev_bloom',    name:'ALGAL BLOOM',     desc:'Oxygen is dropping. The water is turning green. Reeds are unusually dense this round.' },
+  { id:'ev_rain',     name:'SUDDEN DOWNPOUR', desc:'All movement this round is boosted by +1 tile. Fast but messy.' },
+  { id:'ev_patrol',   name:'RIVER PATROL',    desc:'An inspector is watching. All sabotages cost 2 tokens this round.' },
+  { id:'ev_cleanup',  name:'COMMUNITY DAY',   desc:'Schools are cleaning the banks. Every Scoop pays double tokens this round.' },
+  { id:'ev_dam',      name:'DAM OVERFLOW',    desc:'Upstream release. Whoever moves most this round gets bumped +1 extra.' },
+  { id:'ev_fog',      name:'MORNING FOG',     desc:'Visibility is zero. Sabotage targets are randomized this round.' }
+];
+
+// ==========================================================
+// BROADCAST FLAVOR — random one-liners on screen during reveals
+// Tone: dry, observational, NOT mascot-cheerful.
+// ==========================================================
+const FLAVOR = {
+  reveal: [
+    'Cards down. No take-backs.',
+    'Let us see what the watershed thinks.',
+    'Moment of truth, please.',
+    'Revealing. Please do not look away.',
+    'Decisions have textures now.',
+    'Everyone lock in.'
+  ],
+  sabotageHit: [
+    'Oh no. Oh no no no.',
+    'That is unfortunate.',
+    'Somebody did that on purpose, you realize.',
+    'Points for creativity, at least.',
+    'Welcome to downstream.'
+  ],
+  sabotageBlocked: [
+    'Shields held. Rude attempt, rebuffed.',
+    'Nice try, nothing happens.',
+    'The shield absorbs the mischief.',
+    'Sabotage detected. Sabotage denied.'
+  ],
+  sprintSuccess: [
+    'Excellent pace.',
+    'That is a lot of water covered.',
+    'The raft is practically airborne.'
+  ],
+  scoopSuccess: [
+    'Garbage retrieved.',
+    'The river is microscopically cleaner.',
+    'Three bottles and a credit card.'
+  ],
+  crash: [
+    'The raft briefly forgets it is a raft.',
+    'Turbulence. Many apologies.',
+    'The current disagrees with your plans.'
+  ],
+  generic: [
+    'The river continues, unimpressed.',
+    'Somewhere, a heron is taking notes.',
+    'The watershed updates its ledger.',
+    'Documentation-grade moment.'
+  ],
+  preRoll: [
+    'Decide fast. Others will.',
+    'Good decisions age better than fast decisions. Usually.',
+    'The clock is unsympathetic.',
+    'No card is always right. Most cards are sometimes right.'
+  ],
+  win: [
+    'Delta reached. The river is marginally less cursed.',
+    'Victory. Historians will barely mention it.',
+    'You win. The fish are neutral on the matter.',
+    'Delta. Confetti not included, imagine some.'
+  ]
+};
+
+// ==========================================================
+// SCORING CONSTANTS
+// ==========================================================
+const SCORING = {
+  pointsPerTile: 2,
+  pointsPerToken: 1,
+  deltaBonus: 10,
+  deltaTile: 30,
+  maxRounds: 10,
+  sabotageLimit: 3,
+  startingTokens: 0
+};
+
+
+// ===== Logic =====
+// =========================================================
+// WIPEOUT — Pure logic functions
+// =========================================================
+
+// -----------------------------------------------------------
+// Generate a round: an event (possibly), a quiz question.
+// -----------------------------------------------------------
+function generateRound(roundIdx, usedEvents, usedQuiz){
+  const availableEvents = EVENTS.filter(e => !usedEvents.includes(e.id));
+  const eventPool = availableEvents.length > 0 ? availableEvents : EVENTS;
+  const event = eventPool[Math.floor(Math.random() * eventPool.length)];
+
+  const availableQuiz = QUIZ.filter((_,i) => !usedQuiz.includes(i));
+  const quizPool = availableQuiz.length > 0 ? availableQuiz : QUIZ;
+  const quizIdx = QUIZ.indexOf(quizPool[Math.floor(Math.random() * quizPool.length)]);
+
+  return {
+    index: roundIdx,
+    eventId: event.id,
+    quizIdx,
+    startedAt: Date.now()
+  };
+}
+
+function getEvent(eventId){ return EVENTS.find(e => e.id === eventId) || EVENTS[0]; }
+function getQuiz(quizIdx){ return QUIZ[quizIdx] || QUIZ[0]; }
+
+// -----------------------------------------------------------
+// Determine valid card plays for a team given cooldowns & limits
+// -----------------------------------------------------------
+function availableCardsFor(team){
+  const cooldowns = team.cooldowns || {};
+  const sabotageUsed = team.sabotagesUsed || 0;
+  return CARDS.filter(c => {
+    if ((cooldowns[c.id] || 0) > 0) return false;
+    if (c.gameLimit && sabotageUsed >= c.gameLimit) return false;
+    return true;
+  });
+}
+
+// -----------------------------------------------------------
+// Resolution engine — deterministic, order matters
+//
+// Order:
+//   1. BRAKE — no movement, but sets anchor flag for next round
+//   2. SHIELDS — activate
+//   3. SABOTAGES — apply unless blocked
+//   4. MOVEMENTS — paddle, sprint (with event modifiers)
+//   5. SCOOPS — collect tokens (with event modifiers)
+//   6. TILE EFFECTS — landing on hazard tiles
+//   7. EVENT FINALIZATION — special event effects (e.g. Dam Overflow bonus)
+//
+// Input: teams (array), submissions (map teamId -> submission), event
+// Output: resolutions (map teamId -> resolution), updated teams
+// -----------------------------------------------------------
+function resolveRound(teams, submissions, event, quiz){
+  const resolutions = {};
+  // Init resolutions
+  teams.forEach(t => {
+    resolutions[t.id] = {
+      oldPos: t.position || 0,
+      newPos: t.position || 0,
+      tokensDelta: 0,
+      events: [],
+      cardPlayed: submissions[t.id]?.card || null,
+      quizCorrect: false,
+      moveAmount: 0,
+      sabotageTargeted: null,
+      sabotageReceived: false,
+      sabotageBlocked: false,
+      shielded: false,
+      braked: false,
+      anchoredNextRound: false
+    };
+  });
+
+  // 1. Brakes
+  teams.forEach(t => {
+    const sub = submissions[t.id];
+    if (sub?.card === 'brake'){
+      resolutions[t.id].braked = true;
+      resolutions[t.id].anchoredNextRound = true;
+      resolutions[t.id].events.push({ kind:'brake', text:'Anchored. Untouchable next round.' });
+    }
+  });
+
+  // 2. Shields
+  teams.forEach(t => {
+    const sub = submissions[t.id];
+    const hasCarryShield = (t.anchoredThisRound === true); // from previous brake
+    if (sub?.card === 'shield' || hasCarryShield){
+      resolutions[t.id].shielded = true;
+      if (sub?.card === 'shield'){
+        resolutions[t.id].events.push({ kind:'shield', text:'Shield up. Sabotage nullified.' });
+      } else {
+        resolutions[t.id].events.push({ kind:'shield', text:'Anchor still active. Immune.' });
+      }
+    }
+  });
+
+  // 3. Sabotages
+  teams.forEach(t => {
+    const sub = submissions[t.id];
+    if (sub?.card !== 'sabotage') return;
+    let target = sub.target;
+    // Fog event: randomize target (but not self)
+    if (event.id === 'ev_fog'){
+      const candidates = teams.filter(x => x.id !== t.id);
+      if (candidates.length > 0) target = candidates[Math.floor(Math.random()*candidates.length)].id;
+    }
+    resolutions[t.id].sabotageTargeted = target;
+    resolutions[t.id].events.push({ kind:'sabotage-out', text:`Sabotaged ${teamName(teams,target)}.` });
+    const tgtRes = resolutions[target];
+    if (!tgtRes) return;
+    if (tgtRes.shielded){
+      tgtRes.sabotageBlocked = true;
+      tgtRes.events.push({ kind:'sabotage-blocked', text:`${teamName(teams,t.id)}'s sabotage bounced off your shield.` });
+    } else {
+      tgtRes.sabotageReceived = true;
+      tgtRes.moveAmount -= 3;
+      tgtRes.events.push({ kind:'sabotage-in', text:`${teamName(teams,t.id)} sabotaged you. -3 tiles.` });
+    }
+  });
+
+  // 4. Movement
+  let movementBoost = 0;
+  if (event.id === 'ev_rain') movementBoost = 1;
+
+  teams.forEach(t => {
+    const sub = submissions[t.id];
+    const res = resolutions[t.id];
+    if (!sub?.card){ res.events.push({ kind:'idle', text:'No card submitted. Raft drifts.' }); return; }
+    switch (sub.card){
+      case 'paddle':
+        res.moveAmount += 2 + movementBoost;
+        break;
+      case 'sprint':
+        res.moveAmount += 3 + movementBoost;
+        // Sprint penalty: if sabotaged AND not shielded, extra -1
+        if (res.sabotageReceived){
+          res.moveAmount -= 1;
+          res.events.push({ kind:'sprint-hit', text:'Sprint interrupted. Extra -1 tile.' });
+        }
+        break;
+      case 'shield':
+        res.moveAmount += 1 + movementBoost;
+        break;
+      case 'scoop':
+      case 'brake':
+      case 'sabotage':
+        break;
+    }
+    // Plastic patch slow effect (from previous round) halves movement
+    if (t.slowedThisRound){
+      const orig = res.moveAmount;
+      res.moveAmount = Math.floor(orig / 2);
+      res.events.push({ kind:'slow', text:`Plastic drag: ${orig} → ${res.moveAmount} tiles.` });
+    }
+  });
+
+  // 5. Scoops
+  const scoopMult = event.id === 'ev_cleanup' ? 2 : 1;
+  teams.forEach(t => {
+    const sub = submissions[t.id];
+    const res = resolutions[t.id];
+    if (sub?.card === 'scoop'){
+      const gained = 2 * scoopMult;
+      res.tokensDelta += gained;
+      res.events.push({ kind:'scoop', text:`Scoop: +${gained} tokens.` });
+    }
+  });
+
+  // 5b. Quiz
+  teams.forEach(t => {
+    const sub = submissions[t.id];
+    const res = resolutions[t.id];
+    if (sub?.quiz !== undefined && sub.quiz === quiz.answer){
+      res.quizCorrect = true;
+      res.tokensDelta += 1;
+      res.events.push({ kind:'quiz', text:'Correct quiz: +1 token.' });
+    }
+  });
+
+  // 6. Sabotage cost event
+  if (event.id === 'ev_patrol'){
+    teams.forEach(t => {
+      const sub = submissions[t.id];
+      const res = resolutions[t.id];
+      if (sub?.card === 'sabotage'){
+        res.tokensDelta -= 2;
+        res.events.push({ kind:'patrol', text:'River patrol fined you: -2 tokens.' });
+      }
+    });
+  }
+
+  // Apply movement to positions (pre-hazard tile effects)
+  teams.forEach(t => {
+    const res = resolutions[t.id];
+    const oldPos = res.oldPos;
+    let newPos = Math.max(0, oldPos + res.moveAmount);
+    newPos = Math.min(SCORING.deltaTile, newPos); // clamp at delta
+    res.newPos = newPos;
+  });
+
+  // 7. Tile effects — hazards on the tile the raft lands on
+  const slowedNextRound = {};
+  teams.forEach(t => {
+    const res = resolutions[t.id];
+    const landedTile = res.newPos;
+    const hazard = HAZARD_TILES[landedTile];
+    if (!hazard) return;
+    res.hazardId = hazard.id;
+    res.hazardName = hazard.name;
+    switch (hazard.effect){
+      case 'shuffle': {
+        const delta = Math.random() < 0.5 ? -2 : 2;
+        const shifted = Math.max(0, Math.min(SCORING.deltaTile, landedTile + delta));
+        res.newPos = shifted;
+        res.events.push({ kind:'hazard', text:`${hazard.name}: shuffled ${delta > 0 ? '+':''}${delta} tiles.` });
+        break;
+      }
+      case 'stall':
+        res.newPos = Math.max(0, landedTile - 1);
+        res.events.push({ kind:'hazard', text:`${hazard.name}: -1 tile.` });
+        break;
+      case 'lose_token':
+        res.tokensDelta -= 1;
+        res.events.push({ kind:'hazard', text:`${hazard.name}: -1 token.` });
+        break;
+      case 'bonus_token':
+        res.tokensDelta += 2;
+        res.events.push({ kind:'hazard', text:`${hazard.name}: +2 tokens.` });
+        break;
+      case 'slow':
+        slowedNextRound[t.id] = true;
+        res.events.push({ kind:'hazard', text:`${hazard.name}: slowed next round.` });
+        break;
+    }
+  });
+
+  // 8. Event: Dam Overflow bonus — biggest mover gets +1
+  if (event.id === 'ev_dam'){
+    let topId = null, topMove = -1;
+    Object.entries(resolutions).forEach(([id, res]) => {
+      const delta = res.newPos - res.oldPos;
+      if (delta > topMove){ topMove = delta; topId = id; }
+    });
+    if (topId && topMove > 0){
+      const res = resolutions[topId];
+      res.newPos = Math.min(SCORING.deltaTile, res.newPos + 1);
+      res.events.push({ kind:'event-bonus', text:'Dam overflow bonus: +1 tile.' });
+    }
+  }
+
+  // Compose state updates
+  const teamUpdates = {};
+  teams.forEach(t => {
+    const res = resolutions[t.id];
+    const sub = submissions[t.id];
+    const newCooldowns = {};
+    // Tick down existing cooldowns
+    Object.entries(t.cooldowns || {}).forEach(([k,v]) => { if (v > 1) newCooldowns[k] = v - 1; });
+    // Set new cooldown for played card
+    if (sub?.card){
+      const cardDef = CARD_BY_ID[sub.card];
+      if (cardDef && cardDef.cooldown > 0){
+        newCooldowns[sub.card] = cardDef.cooldown;
+      }
+    }
+    const newSabotagesUsed = (t.sabotagesUsed || 0) + (sub?.card === 'sabotage' ? 1 : 0);
+    teamUpdates[t.id] = {
+      position: res.newPos,
+      tokens: Math.max(0, (t.tokens||0) + res.tokensDelta),
+      cooldowns: newCooldowns,
+      sabotagesUsed: newSabotagesUsed,
+      anchoredThisRound: res.anchoredNextRound,
+      slowedThisRound: !!slowedNextRound[t.id]
+    };
+  });
+
+  return { resolutions, teamUpdates };
+}
+
+function teamName(teams, id){
+  const t = teams.find(x => x.id === id);
+  return t ? t.name : '?';
+}
+
+// -----------------------------------------------------------
+// Final score computation
+// -----------------------------------------------------------
+function finalScore(team){
+  const tilePts = (team.position || 0) * SCORING.pointsPerTile;
+  const tokenPts = (team.tokens || 0) * SCORING.pointsPerToken;
+  const deltaBonus = (team.position >= SCORING.deltaTile) ? SCORING.deltaBonus : 0;
+  return tilePts + tokenPts + deltaBonus;
+}
+
+// -----------------------------------------------------------
+// Game end check
+// -----------------------------------------------------------
+function isGameOver(teams, roundIdx){
+  if (roundIdx >= SCORING.maxRounds) return true;
+  if (teams.some(t => (t.position||0) >= SCORING.deltaTile)) return true;
+  return false;
+}
+
+// -----------------------------------------------------------
+// Pick a flavor line
+// -----------------------------------------------------------
+function flavorPick(key){
+  const arr = FLAVOR[key] || FLAVOR.generic;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+
+// =========================================================
+// WIPEOUT — Board rendering (SVG)
+// =========================================================
+
+function renderBoard(teams, myTeamId){
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 1600 200');
+  svg.setAttribute('class', 'board-svg');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+  // Background gradient for water
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML = `
+    <linearGradient id="waterGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#00d9ff" stop-opacity="0.15"/>
+      <stop offset="0.4"  stop-color="#ff6b35" stop-opacity="0.15"/>
+      <stop offset="0.7"  stop-color="#9d4eff" stop-opacity="0.15"/>
+      <stop offset="1"    stop-color="#ffe03d" stop-opacity="0.15"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feOffset dx="0" dy="3" in="blur" result="offset"/>
+      <feMerge><feMergeNode in="offset"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  // River path background
+  const riverBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  riverBg.setAttribute('x','0'); riverBg.setAttribute('y','60');
+  riverBg.setAttribute('width','1600'); riverBg.setAttribute('height','80');
+  riverBg.setAttribute('fill','url(#waterGrad)');
+  riverBg.setAttribute('rx','4');
+  svg.appendChild(riverBg);
+
+  // Segment backgrounds
+  SEGMENTS.forEach((seg, idx) => {
+    const firstTile = seg.tiles[0];
+    const lastTile = seg.tiles[seg.tiles.length - 1];
+    const x1 = ((firstTile - 0.5) / 31) * 1600;
+    const x2 = ((lastTile + 0.5) / 31) * 1600;
+    const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    r.setAttribute('x', x1);
+    r.setAttribute('y', 65);
+    r.setAttribute('width', x2 - x1);
+    r.setAttribute('height', 70);
+    r.setAttribute('fill', seg.tint);
+    r.setAttribute('fill-opacity', '0.08');
+    r.setAttribute('rx', '2');
+    svg.appendChild(r);
+
+    // Segment name label
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    lbl.setAttribute('x', (x1 + x2) / 2);
+    lbl.setAttribute('y', 54);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('font-family', 'Bungee, sans-serif');
+    lbl.setAttribute('font-size', '11');
+    lbl.setAttribute('fill', seg.tint);
+    lbl.setAttribute('opacity', '0.8');
+    lbl.setAttribute('letter-spacing', '2');
+    lbl.textContent = seg.name.toUpperCase();
+    svg.appendChild(lbl);
+  });
+
+  // Tile marks
+  for (let t = 1; t <= 30; t++){
+    const x = (t / 31) * 1600;
+    const hazard = HAZARD_TILES[t];
+    const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    tick.setAttribute('x1', x); tick.setAttribute('x2', x);
+    tick.setAttribute('y1', 130); tick.setAttribute('y2', 138);
+    tick.setAttribute('stroke', 'rgba(170,180,255,0.3)');
+    tick.setAttribute('stroke-width', '1');
+    svg.appendChild(tick);
+
+    if (hazard){
+      const haz = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      haz.setAttribute('cx', x);
+      haz.setAttribute('cy', 100);
+      haz.setAttribute('r', '6');
+      haz.setAttribute('fill', '#ff3dd1');
+      haz.setAttribute('opacity', '0.8');
+      haz.setAttribute('filter', 'url(#glow)');
+      svg.appendChild(haz);
+
+      const hazLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      hazLbl.setAttribute('x', x);
+      hazLbl.setAttribute('y', 160);
+      hazLbl.setAttribute('text-anchor', 'middle');
+      hazLbl.setAttribute('font-family', 'JetBrains Mono, monospace');
+      hazLbl.setAttribute('font-size', '7');
+      hazLbl.setAttribute('fill', '#ff3dd1');
+      hazLbl.setAttribute('opacity', '0.8');
+      hazLbl.textContent = hazard.name;
+      svg.appendChild(hazLbl);
+    }
+
+    if (t % 5 === 0 || t === 1){
+      const num = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      num.setAttribute('x', x);
+      num.setAttribute('y', 150);
+      num.setAttribute('text-anchor', 'middle');
+      num.setAttribute('font-family', 'JetBrains Mono, monospace');
+      num.setAttribute('font-size', '9');
+      num.setAttribute('fill', 'rgba(170,180,255,0.6)');
+      num.textContent = t;
+      svg.appendChild(num);
+    }
+  }
+
+  // Delta icon at tile 30
+  const deltaX = (30 / 31) * 1600;
+  const deltaStar = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  deltaStar.setAttribute('x', deltaX + 30);
+  deltaStar.setAttribute('y', 105);
+  deltaStar.setAttribute('text-anchor', 'middle');
+  deltaStar.setAttribute('font-size', '24');
+  deltaStar.textContent = '🏁';
+  svg.appendChild(deltaStar);
+
+  // Team rafts - stack if same tile
+  const positionGroups = {};
+  teams.forEach(t => {
+    const pos = t.position || 0;
+    if (!positionGroups[pos]) positionGroups[pos] = [];
+    positionGroups[pos].push(t);
+  });
+
+  Object.entries(positionGroups).forEach(([posStr, tms]) => {
+    const pos = parseInt(posStr);
+    const x = Math.max(20, (pos / 31) * 1600);
+    tms.forEach((t, idx) => {
+      const yOffset = 105 - (idx * 22);
+      const isMe = t.id === myTeamId;
+      const raft = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      raft.setAttribute('transform', `translate(${x}, ${yOffset})`);
+      raft.innerHTML = `
+        <circle cx="0" cy="0" r="14" fill="${t.color || '#00d9ff'}" opacity="0.2" filter="url(#glow)"/>
+        <rect x="-14" y="-8" width="28" height="16" rx="3" fill="${t.color || '#00d9ff'}" filter="url(#shadow)"/>
+        <text x="0" y="4" text-anchor="middle" font-family="Bungee, sans-serif" font-size="9" fill="#0a0e1a" font-weight="bold">${t.code}</text>
+        ${isMe ? `<circle cx="0" cy="-14" r="3" fill="#00ffaa" filter="url(#glow)"><animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/></circle>` : ''}
+      `;
+      svg.appendChild(raft);
+    });
+  });
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'board-wrap';
+  const header = document.createElement('div');
+  header.className = 'board-header';
+  header.innerHTML = `
+    <h3>THE RIVER</h3>
+    <div class="sub mono" style="font-size:11px">Tile 0 — Alpine Source · Tile 30 — Delta Finish</div>
+  `;
+  wrapper.appendChild(header);
+  wrapper.appendChild(svg);
+  return wrapper;
+}
+
+
+// ===== Screens =====
+// =========================================================
+// WIPEOUT — Screens & Firebase sync (peer-to-peer)
+// =========================================================
+
+function openModal(html){
+  modal.innerHTML = html;
+  modalBg.classList.add('open');
+  modalBg.setAttribute('aria-hidden','false');
+}
+function closeModal(){
+  modalBg.classList.remove('open');
+  modalBg.setAttribute('aria-hidden','true');
+  modal.innerHTML = '';
+}
+modalBg.addEventListener('click', e => { if (e.target === modalBg) closeModal(); });
+
+function go(screenId, renderFn){
+  localState.currentScreen = screenId;
+  stage.style.transition = 'opacity .15s ease';
+  stage.style.opacity = 0;
+  setTimeout(() => {
+    stage.innerHTML = '';
+    try { renderFn(); }
+    catch(err){
+      console.error(err);
+      stage.innerHTML = `<div class="panel"><h2>Rendering error</h2><p class="sub">${escapeHtml(err.message)}</p></div>`;
+    }
+    stage.style.opacity = 1;
+  }, 150);
+}
+
+const localState = {
+  roomCode: null,
+  myUid: null,
+  myTeamId: null,
+  firebaseApp: null,
+  db: null,
+  auth: null,
+  room: null,
+  unsubscribers: [],
+  audioEnabled: true,
+  currentScreen: null,
+  syncStatus: 'offline',
+  advanceTimer: null,
+  advanceCountdown: 0,
+  tryingResolve: false,
+  tryingAdvance: false,
+  pendingTarget: null,
+  deployTimer: null,
+  deployCountdown: 0,
+  quizAnswered: false
+};
+
+function setSyncStatus(s, text){
+  localState.syncStatus = s;
+  const pill = $('#syncPill');
+  if (!pill) return;
+  pill.classList.remove('hidden','off','warn');
+  if (s === 'offline') pill.classList.add('off');
+  else if (s === 'warn') pill.classList.add('warn');
+  $('#syncText').textContent = text || (s === 'online' ? 'Live' : s === 'offline' ? 'Offline' : 'Syncing');
+}
+
+async function initFirebase(cfg){
+  localState.firebaseApp = initializeApp(cfg);
+  localState.db = getDatabase(localState.firebaseApp);
+  localState.auth = getAuth(localState.firebaseApp);
+  await signInAnonymously(localState.auth);
+  return new Promise(resolve => {
+    onAuthStateChanged(localState.auth, user => {
+      if (user){ localState.myUid = user.uid; resolve(user); }
+    });
+  });
+}
+
+// Use a separate path so Wipeout and Confluence rooms never collide
+function roomPath(code, sub){ return sub ? `wipeout_rooms/${code}/${sub}` : `wipeout_rooms/${code}`; }
+
+function generateRoomCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function subscribe(path, cb){
+  const r = ref(localState.db, path);
+  const unsub = onValue(r, snap => cb(snap.val()), err => {
+    console.error('Subscription error:', err);
+    setSyncStatus('warn', 'Sync issue');
+  });
+  localState.unsubscribers.push(unsub);
+  return unsub;
+}
+function unsubscribeAll(){
+  localState.unsubscribers.forEach(u => { try{ u(); } catch(e){} });
+  localState.unsubscribers = [];
+}
+function extractTeams(room){
+  if (!room || !room.teams) return [];
+  return Object.entries(room.teams)
+    .map(([id, t]) => ({ id, ...t }))
+    .filter(t => t.code && t.name);
+}
+function getMyTeam(){
+  if (!localState.room || !localState.room.teams || !localState.myTeamId) return null;
+  const t = localState.room.teams[localState.myTeamId];
+  if (!t) return null;
+  return { id: localState.myTeamId, ...t };
+}
+
+// =========================================================
+// ROUTER
+// =========================================================
+function onRoomUpdate(){
+  const room = localState.room;
+  if (!room || !room.meta) return;
+  const status = room.meta.status;
+  if (!localState.myTeamId) return;
+
+  if (status === 'lobby'){
+    if (localState.currentScreen !== 'lobby') go('lobby', renderLobby);
+    else refreshLobby();
+  } else if (status === 'round_playing'){
+    if (localState.currentScreen !== 'playing') go('playing', renderPlaying);
+    else refreshPlaying();
+    checkAndTriggerAutoResolve();
+  } else if (status === 'round_resolution'){
+    if (localState.currentScreen !== 'resolution') go('resolution', renderResolution);
+  } else if (status === 'final'){
+    if (localState.currentScreen !== 'final') go('final', renderFinal);
+  }
+}
+
+// =========================================================
+// HOME
+// =========================================================
+function renderHome(){
+  $('#leaveBtn').classList.add('hidden');
+  $('#syncPill').classList.add('hidden');
+  setFooter('Board games, but the board is made of water.');
+  stage.innerHTML = `
+    <div class="panel">
+      <div class="kicker">eTwinning · Guardians of our Waters</div>
+      <h1 class="display-title logo-type" data-subtitle="A RIVER-RESCUE RACE">WIPEOUT</h1>
+      <p class="lead">Six teams. One chaotic river. Every round you play a card, sabotages fly across borders, and somebody eats a plastic patch at the worst possible moment. <b>First raft to the Delta wins.</b> Ten rounds max. Scoring is fully objective. No host needed.</p>
+
+      <div class="home-grid">
+        <div class="home-option">
+          <h3 class="h3-a">Start a new game</h3>
+          <p class="sub" style="margin-bottom: 14px">Your team creates the room. Others join with the code.</p>
+          <button class="primary" id="createBtn" style="width:100%">Create a room</button>
+        </div>
+        <div class="home-option">
+          <h3 class="h3-b">Join existing game</h3>
+          <p class="sub" style="margin-bottom: 10px">Enter the 4-letter code.</p>
+          <div class="row" style="gap:8px">
+            <input type="text" id="joinCodeInput" class="text-input" maxlength="4" placeholder="XXXX" style="text-transform:uppercase; letter-spacing:.2em; text-align:center; font-size:22px">
+            <button class="secondary" id="joinBtn">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:22px; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
+        <a href="https://physicsplay.github.io/Confluence-game/" style="color:var(--mute); font-size:12px; text-decoration:none; border-bottom:1px dashed var(--line); padding-bottom:1px; font-family:'Archivo',sans-serif; letter-spacing:0.05em">← Looking for Confluence instead?</a>
+      </div>
+    </div>
+  `;
+
+  $('#createBtn').addEventListener('click', () => {
+    unlockAudio(); playSelect();
+    go('picker', () => renderStationPicker('create'));
+  });
+
+  const joinCodeInput = $('#joinCodeInput');
+  const joinAction = () => {
+    const code = (joinCodeInput.value || '').toUpperCase().trim();
+    if (!/^[A-Z2-9]{4}$/.test(code)){
+      joinCodeInput.style.borderColor = 'var(--red)';
+      return;
+    }
+    unlockAudio(); playSelect();
+    go('picker', () => renderStationPicker('join', code));
+  };
+  joinCodeInput.addEventListener('input', () => {
+    joinCodeInput.style.borderColor = '';
+    joinCodeInput.value = joinCodeInput.value.toUpperCase();
+  });
+  joinCodeInput.addEventListener('keyup', e => { if (e.key === 'Enter') joinAction(); });
+  $('#joinBtn').addEventListener('click', joinAction);
+}
+
+// =========================================================
+// STATION PICKER
+// =========================================================
+async function renderStationPicker(mode, roomCode){
+  $('#leaveBtn').classList.remove('hidden');
+  setSyncStatus('warn', 'Connecting');
+  $('#syncPill').classList.remove('hidden');
+
+  stage.innerHTML = `
+    <div class="panel">
+      <div class="kicker">${mode === 'create' ? 'New room' : 'Room ' + escapeHtml(roomCode||'')}</div>
+      <h2 class="panel-title" style="margin:4px 0 6px">${mode === 'create' ? 'Build your crew' : 'Pick your country'}</h2>
+      <p class="sub">Name your raft crew and pick which country you represent.</p>
+
+      <div style="margin-top:16px">
+        <label class="sub" style="display:block; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--mute); margin-bottom:6px; text-transform:uppercase; letter-spacing:.1em">Crew name</label>
+        <input type="text" id="teamNameInput" maxlength="28" placeholder="e.g. The Splash Pack, Riverrunners, Delta Force…" class="text-input">
+      </div>
+
+      <div style="margin-top:16px">
+        <label class="sub" style="display:block; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--mute); margin-bottom:6px; text-transform:uppercase; letter-spacing:.1em">Country</label>
+        <div class="country-picker" id="countryPicker">${
+          NATIONS.map(n => `
+            <div class="country-pick" data-code="${n.code}">
+              <div class="cc" style="color:${n.color}">${n.code}</div>
+              <div class="nm">${escapeHtml(n.name)}</div>
+            </div>
+          `).join('')
+        }</div>
+      </div>
+
+      <div id="pickerErr" class="error-banner hidden"></div>
+      <div id="pickerStatus" class="sub" style="font-size:12px; color:var(--mute); margin-top:8px"></div>
+
+      <div class="row end-right" style="margin-top:14px">
+        <button class="ghost" id="backPicker">Back</button>
+        <button class="primary" id="submitPicker" disabled>${mode === 'create' ? 'Create room & join' : 'Join room'}</button>
+      </div>
+    </div>
+  `;
+
+  let selectedCode = null;
+  let takenCountries = new Set();
+
+  try {
+    await initFirebase(FIREBASE_CONFIG);
+    setSyncStatus('online', 'Live');
+  } catch(err){
+    setSyncStatus('offline', 'Error');
+    $('#pickerErr').textContent = 'Connection failed: ' + err.message;
+    $('#pickerErr').classList.remove('hidden');
+    return;
+  }
+
+  if (mode === 'join'){
+    try {
+      const metaSnap = await get(ref(localState.db, roomPath(roomCode, 'meta')));
+      if (!metaSnap.exists()){
+        $('#pickerErr').textContent = `Room ${roomCode} not found.`;
+        $('#pickerErr').classList.remove('hidden');
+        $('#submitPicker').disabled = true;
+        return;
+      }
+      const meta = metaSnap.val();
+      if (meta.status !== 'lobby'){
+        $('#pickerErr').textContent = `Room ${roomCode} is already playing.`;
+        $('#pickerErr').classList.remove('hidden');
+        $('#submitPicker').disabled = true;
+        return;
+      }
+      subscribe(roomPath(roomCode, 'teams'), teamsData => {
+        takenCountries = new Set();
+        if (teamsData){
+          Object.values(teamsData).forEach(t => { if (t && t.code) takenCountries.add(t.code); });
+        }
+        updatePickerUI();
+      });
+    } catch(err){
+      $('#pickerErr').textContent = 'Failed to read room: ' + err.message;
+      $('#pickerErr').classList.remove('hidden');
+    }
+  }
+
+  function updatePickerUI(){
+    document.querySelectorAll('.country-pick').forEach(el => {
+      const c = el.dataset.code;
+      const isTaken = takenCountries.has(c);
+      el.classList.toggle('taken', isTaken);
+      if (isTaken && el.classList.contains('selected')){
+        el.classList.remove('selected');
+        selectedCode = null;
+      }
+      let tag = el.querySelector('.tag-taken');
+      if (isTaken && !tag){
+        tag = document.createElement('div');
+        tag.className = 'tag-taken';
+        tag.textContent = 'Taken';
+        el.appendChild(tag);
+      } else if (!isTaken && tag){
+        tag.remove();
+      }
+    });
+    updateSubmitButton();
+  }
+  function updateSubmitButton(){
+    const name = $('#teamNameInput').value.trim();
+    $('#submitPicker').disabled = !selectedCode || name.length < 2;
+  }
+
+  $('#countryPicker').addEventListener('click', e => {
+    const el = e.target.closest('.country-pick');
+    if (!el || el.classList.contains('taken')) return;
+    playSelect();
+    document.querySelectorAll('.country-pick').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCode = el.dataset.code;
+    updateSubmitButton();
+  });
+  $('#teamNameInput').addEventListener('input', updateSubmitButton);
+  $('#backPicker').addEventListener('click', () => {
+    unsubscribeAll();
+    setSyncStatus('offline', 'Offline');
+    $('#syncPill').classList.add('hidden');
+    $('#leaveBtn').classList.add('hidden');
+    go('home', renderHome);
+  });
+  $('#submitPicker').addEventListener('click', async () => {
+    const name = $('#teamNameInput').value.trim();
+    if (!name || !selectedCode) return;
+    $('#submitPicker').disabled = true;
+    $('#pickerStatus').textContent = mode === 'create' ? 'Creating room…' : 'Joining room…';
+    try {
+      if (mode === 'create') await doCreateRoom(name, selectedCode);
+      else await doJoinRoom(roomCode, name, selectedCode);
+    } catch(err){
+      $('#pickerErr').textContent = err.message;
+      $('#pickerErr').classList.remove('hidden');
+      $('#submitPicker').disabled = false;
+      $('#pickerStatus').textContent = '';
+    }
+  });
+}
+
+async function doCreateRoom(teamName, teamCountry){
+  unsubscribeAll();
+  let code;
+  for (let i=0; i<8; i++){
+    code = generateRoomCode();
+    const snap = await get(ref(localState.db, roomPath(code, 'meta')));
+    if (!snap.exists()) break;
+  }
+  localState.roomCode = code;
+
+  const teamsRef = ref(localState.db, roomPath(code, 'teams'));
+  const newTeamRef = push(teamsRef);
+  const teamId = newTeamRef.key;
+  const teamColor = NATIONS.find(n => n.code === teamCountry)?.color || '#00d9ff';
+
+  await set(ref(localState.db, roomPath(code)), {
+    meta: { creatorUid: localState.myUid, status:'lobby', createdAt: serverTimestamp(), totalRounds: SCORING.maxRounds },
+    teams: {
+      [teamId]: {
+        code: teamCountry, name: teamName, color: teamColor,
+        position: 0, tokens: SCORING.startingTokens, sabotagesUsed: 0,
+        cooldowns: {}, anchoredThisRound: false, slowedThisRound: false,
+        connected: true, joinedAt: serverTimestamp(), uid: localState.myUid
+      }
+    }
+  });
+
+  localState.myTeamId = teamId;
+  sessionStorage.setItem(`wipeout.team.${code}`, JSON.stringify({ teamId }));
+  onDisconnect(newTeamRef).update({ connected: false });
+  subscribe(roomPath(code), data => {
+    localState.room = data;
+    setSyncStatus('online', 'Live');
+    onRoomUpdate();
+  });
+  go('lobby', renderLobby);
+}
+
+async function doJoinRoom(code, teamName, teamCountry){
+  unsubscribeAll();
+  localState.roomCode = code;
+
+  const teamsRef = ref(localState.db, roomPath(code, 'teams'));
+  const newTeamRef = push(teamsRef);
+  const teamId = newTeamRef.key;
+  const teamColor = NATIONS.find(n => n.code === teamCountry)?.color || '#00d9ff';
+  await set(newTeamRef, {
+    code: teamCountry, name: teamName, color: teamColor,
+    position: 0, tokens: SCORING.startingTokens, sabotagesUsed: 0,
+    cooldowns: {}, anchoredThisRound: false, slowedThisRound: false,
+    connected: true, joinedAt: serverTimestamp(), uid: localState.myUid
+  });
+  localState.myTeamId = teamId;
+  sessionStorage.setItem(`wipeout.team.${code}`, JSON.stringify({ teamId }));
+  onDisconnect(newTeamRef).update({ connected: false });
+  subscribe(roomPath(code), data => {
+    localState.room = data;
+    setSyncStatus('online', 'Live');
+    onRoomUpdate();
+  });
+  go('lobby', renderLobby);
+}
+
+// =========================================================
+// LOBBY
+// =========================================================
+function renderLobby(){
+  const code = localState.roomCode;
+  const joinUrl = `${location.origin}${location.pathname}?room=${code}`;
+  stage.innerHTML = `
+    <div class="panel">
+      <div class="kicker">Room ready</div>
+      <h2 class="panel-title" style="margin:4px 0 10px">LOBBY</h2>
+      <p class="sub">Share the code or QR. Each crew joins from its own device.</p>
+
+      <div class="room-code-wrap">
+        <div style="flex:1; min-width:0">
+          <div class="mono" style="font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--mute)">Room code</div>
+          <div class="room-code-big" id="bigCode" title="Click to copy">${code}</div>
+          <div class="join-url" style="margin-top:8px">${escapeHtml(joinUrl)}</div>
+        </div>
+        <div class="qr-box"><canvas id="qrCanvas"></canvas></div>
+      </div>
+
+      <div class="row" style="justify-content:space-between; align-items:flex-end; margin-top:16px">
+        <h4 class="logo-type" style="font-size:14px; color:var(--cyan)">CREWS <span id="teamCount" class="mono" style="color:var(--mute);font-size:12px"></span></h4>
+      </div>
+      <div class="lobby-teams" id="lobbyTeams"></div>
+
+      <div class="row" style="margin-top:22px; justify-content:space-between; align-items:center; flex-wrap:wrap">
+        <div class="sub mono" id="lobbyHint" style="font-size:12px; text-transform:uppercase; letter-spacing:.1em">Waiting for at least 2 crews.</div>
+        <button class="primary" id="startGameBtn" disabled>Start race</button>
+      </div>
+      <p class="sub" style="font-size:11.5px; color:var(--mute); margin-top:10px; font-style:italic">Any crew can start once ≥2 are ready. Rounds auto-resolve.</p>
+    </div>
+  `;
+
+  const canvas = $('#qrCanvas');
+  const qrBox = canvas ? canvas.parentNode : null;
+  if (canvas && window.QRCode && typeof QRCode.toCanvas === 'function'){
+    QRCode.toCanvas(canvas, joinUrl, { width: 140, margin: 1, color: { dark: '#060710', light: '#ffffff' } }, err => {
+      if (err && qrBox){
+        qrBox.innerHTML = '<div style="padding:10px; text-align:center; color:var(--mute); font-size:11px">QR unavailable.<br>Share the code instead.</div>';
+      }
+    });
+  } else if (qrBox){
+    qrBox.innerHTML = '<div style="padding:10px; text-align:center; color:var(--mute); font-size:11px">QR unavailable.<br>Share the code instead.</div>';
+  }
+
+  $('#bigCode').addEventListener('click', () => {
+    navigator.clipboard?.writeText(code);
+    playSelect();
+  });
+
+  $('#startGameBtn').addEventListener('click', async () => {
+    playTransition();
+    await tryStartGame();
+  });
+  refreshLobby();
+}
+
+function refreshLobby(){
+  if (localState.currentScreen !== 'lobby') return;
+  const room = localState.room;
+  const teams = extractTeams(room);
+  const container = $('#lobbyTeams');
+  if (!container) return;
+  container.innerHTML = '';
+  teams.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'lobby-team' + (t.connected === false ? ' offline' : '');
+    const isMe = t.id === localState.myTeamId;
+    div.innerHTML = `
+      <div class="flag" style="color:${t.color}">${escapeHtml(t.code)}</div>
+      <div style="flex:1; min-width:0">
+        <div class="team-name">${escapeHtml(t.name)}${isMe ? ' <span style="color:var(--cyan);font-size:10px;margin-left:4px">(YOU)</span>' : ''}</div>
+        <div class="team-status">${t.connected === false ? 'Offline' : 'Ready'}</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  const slotsNeeded = Math.max(0, 2 - teams.length);
+  for (let i=0;i<slotsNeeded;i++){
+    const div = document.createElement('div');
+    div.className = 'lobby-slot-empty';
+    div.textContent = 'Waiting for crew…';
+    container.appendChild(div);
+  }
+  $('#teamCount').textContent = `· ${teams.length}/6`;
+  $('#startGameBtn').disabled = teams.length < 2;
+  $('#lobbyHint').textContent = teams.length < 2
+    ? 'Waiting for at least 2 crews.'
+    : `${teams.length} crews ready · any crew can start`;
+}
+
+// =========================================================
+// START & ROUND TRANSITIONS
+// =========================================================
+async function tryStartGame(){
+  const code = localState.roomCode;
+  if (!code) return;
+  const statusRef = ref(localState.db, roomPath(code, 'meta/status'));
+  const tx = await runTransaction(statusRef, cur => {
+    if (cur !== 'lobby') return;
+    return 'round_starting';
+  });
+  if (!tx.committed) return;
+  await writeNextRound(0);
+}
+
+async function writeNextRound(roundIdx){
+  const code = localState.roomCode;
+  const roomSnap = await get(ref(localState.db, roomPath(code)));
+  const room = roomSnap.val();
+  if (!room) return;
+  const teams = extractTeams(room);
+  if (teams.length < 2) return;
+
+  const totalRounds = room.meta.totalRounds || SCORING.maxRounds;
+  const usedEvents = room.usedEvents || [];
+  const usedQuiz = room.usedQuiz || [];
+
+  if (roundIdx >= totalRounds || teams.some(t => (t.position||0) >= SCORING.deltaTile)){
+    await update(ref(localState.db, roomPath(code, 'meta')), { status:'final' });
+    return;
+  }
+
+  const round = generateRound(roundIdx, usedEvents, usedQuiz);
+
+  await update(ref(localState.db, roomPath(code)), {
+    round,
+    usedEvents: [...usedEvents, round.eventId],
+    usedQuiz: [...usedQuiz, round.quizIdx],
+    'meta/status': 'round_playing',
+    [`submissions/${roundIdx}`]: null
+  });
+}
+
+async function checkAndTriggerAutoResolve(){
+  if (localState.tryingResolve) return;
+  const room = localState.room;
+  if (!room || !room.meta || room.meta.status !== 'round_playing' || !room.round) return;
+  const teams = extractTeams(room);
+  const roundIdx = room.round.index;
+  const subs = (room.submissions && room.submissions[roundIdx]) || {};
+  const active = teams.filter(t => t.connected !== false);
+  if (active.length === 0) return;
+  const allSubmitted = active.every(t => subs[t.id] && subs[t.id].card);
+  if (!allSubmitted) return;
+
+  localState.tryingResolve = true;
+  try {
+    const code = localState.roomCode;
+    const statusRef = ref(localState.db, roomPath(code, 'meta/status'));
+    const tx = await runTransaction(statusRef, cur => {
+      if (cur !== 'round_playing') return;
+      return 'round_resolving';
+    });
+    if (!tx.committed){ localState.tryingResolve = false; return; }
+    await writeResolutions(roundIdx);
+    await update(ref(localState.db, roomPath(code, 'meta')), { status:'round_resolution' });
+  } catch(err){
+    console.error('Resolve failed:', err);
+  } finally {
+    localState.tryingResolve = false;
+  }
+}
+
+async function writeResolutions(roundIdx){
+  const code = localState.roomCode;
+  const roomSnap = await get(ref(localState.db, roomPath(code)));
+  const room = roomSnap.val();
+  if (!room || !room.round) return;
+  const teams = extractTeams(room);
+  const round = room.round;
+  const event = getEvent(round.eventId);
+  const quiz = getQuiz(round.quizIdx);
+  const subs = (room.submissions && room.submissions[roundIdx]) || {};
+
+  const { resolutions, teamUpdates } = resolveRound(teams, subs, event, quiz);
+
+  const update_obj = {
+    [`resolutions/${roundIdx}`]: resolutions,
+    'round/phase': 'resolved'
+  };
+  Object.entries(teamUpdates).forEach(([tid, up]) => {
+    Object.entries(up).forEach(([k, v]) => {
+      update_obj[`teams/${tid}/${k}`] = v;
+    });
+  });
+  await update(ref(localState.db, roomPath(code)), update_obj);
+}
+
+async function tryAutoAdvance(){
+  if (localState.tryingAdvance) return;
+  localState.tryingAdvance = true;
+  try {
+    const code = localState.roomCode;
+    const room = localState.room;
+    if (!room || !room.meta) return;
+    const totalRounds = room.meta.totalRounds || SCORING.maxRounds;
+    const currentIdx = room.round ? room.round.index : 0;
+    const nextIdx = currentIdx + 1;
+    const teams = extractTeams(room);
+    const someoneReachedDelta = teams.some(t => (t.position||0) >= SCORING.deltaTile);
+    const isLast = (nextIdx >= totalRounds) || someoneReachedDelta;
+
+    const statusRef = ref(localState.db, roomPath(code, 'meta/status'));
+    const tx = await runTransaction(statusRef, cur => {
+      if (cur !== 'round_resolution') return;
+      return isLast ? 'final' : 'round_advancing';
+    });
+    if (!tx.committed) return;
+    if (!isLast) await writeNextRound(nextIdx);
+  } catch(err){
+    console.error('Advance failed:', err);
+  } finally {
+    localState.tryingAdvance = false;
+  }
+}
+
+// =========================================================
+// PLAYING SCREEN
+// =========================================================
+function renderPlaying(){
+  if (localState.advanceTimer){ clearInterval(localState.advanceTimer); localState.advanceTimer = null; }
+  if (localState.deployTimer){ clearInterval(localState.deployTimer); localState.deployTimer = null; }
+  localState.pendingTarget = null;
+  localState.quizAnswered = false;
+
+  const room = localState.room;
+  const team = getMyTeam();
+  if (!team || !room.round) return;
+  const teams = extractTeams(room);
+  const round = room.round;
+  const event = getEvent(round.eventId);
+  const quiz = getQuiz(round.quizIdx);
+
+  const subs = (room.submissions && room.submissions[round.index]) || {};
+  const mySub = subs[team.id];
+  const alreadySubmitted = !!(mySub && mySub.card);
+  const quizAnswered = mySub && mySub.quiz !== undefined && mySub.quiz !== null;
+
+  const eventCls = event.id === 'ev_calm' ? 'event-calm' : (event.id === 'ev_spill' ? 'event-spill' : '');
+
+  stage.innerHTML = `
+    <div class="panel" style="padding:16px 20px; margin-bottom:14px">
+      <div class="row" style="justify-content:space-between; align-items:center">
+        <div>
+          <div class="kicker">Round ${round.index+1}/${room.meta.totalRounds}</div>
+          <h2 class="panel-title" style="margin:0; font-size:20px">${escapeHtml(team.name)} · ${escapeHtml(team.code)}</h2>
+        </div>
+        <div style="text-align:right">
+          <div class="mono" style="font-size:10px; color:var(--mute); text-transform:uppercase; letter-spacing:.1em">${alreadySubmitted ? 'Submitted · waiting' : 'Choose a card'}</div>
+          <div class="timer-num" id="timerNum">—</div>
+        </div>
+      </div>
+      <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+    </div>
+
+    <div class="event-banner ${eventCls}">
+      <div style="font-size:28px">${eventIcon(event.id)}</div>
+      <div>
+        <div class="evt-name">${escapeHtml(event.name)}</div>
+        <div class="evt-desc">${escapeHtml(event.desc)}</div>
+      </div>
+    </div>
+
+    <div id="boardMount"></div>
+
+    <div class="stats-strip">
+      <div class="stat cyan"><div class="lbl">Position</div><div class="val">${team.position||0}<span style="font-size:14px;color:var(--mute)">/30</span></div></div>
+      <div class="stat yellow"><div class="lbl">Tokens</div><div class="val">${team.tokens||0}</div></div>
+      <div class="stat magenta"><div class="lbl">Sabotages</div><div class="val">${SCORING.sabotageLimit - (team.sabotagesUsed||0)}</div></div>
+      <div class="stat mint"><div class="lbl">Score</div><div class="val">${finalScore(team)}</div></div>
+    </div>
+
+    <div class="dashboard">
+      <div class="dash-main">
+        ${!quizAnswered ? `
+        <div class="quiz-panel" id="quizPanel">
+          <div class="qkicker">ROUND QUIZ · +1 TOKEN IF CORRECT</div>
+          <div class="qtext">${escapeHtml(quiz.q)}</div>
+          <div class="quiz-opts" id="quizOpts">
+            ${quiz.opts.map((o,i) => `<div class="quiz-opt" data-idx="${i}">${escapeHtml(o)}</div>`).join('')}
+          </div>
+        </div>
+        ` : `
+        <div class="quiz-panel" style="opacity:.5">
+          <div class="qkicker">QUIZ · ANSWER SUBMITTED</div>
+          <div class="qtext" style="font-size:15px">${escapeHtml(quiz.q)}</div>
+        </div>
+        `}
+
+        <div class="panel">
+          <div class="kicker">YOUR HAND</div>
+          <h3 class="logo-type" style="font-size:18px; margin:4px 0 6px">Pick one card</h3>
+          <p class="sub" style="margin-bottom:8px">Cards reveal simultaneously. Cooldowns disable cards temporarily after use.</p>
+          <div class="cards-grid" id="cardsGrid">
+            ${CARDS.map(c => renderCardCell(c, team, mySub, alreadySubmitted)).join('')}
+          </div>
+          <div id="targetWrap"></div>
+          <div id="submitErr" class="error-banner hidden"></div>
+          <div class="row end-right" style="margin-top:14px">
+            <button class="primary" id="submitCardBtn" ${alreadySubmitted ? 'disabled' : ''}>${alreadySubmitted ? '✓ Submitted' : 'LOCK IT IN'}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-side">
+        <div class="tracker">
+          <h4>ALL CREWS</h4>
+          <div id="submitList"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Mount board
+  $('#boardMount').appendChild(renderBoard(teams, team.id));
+
+  // Quiz handlers
+  if (!quizAnswered){
+    $('#quizOpts').addEventListener('click', async (e) => {
+      const opt = e.target.closest('.quiz-opt');
+      if (!opt) return;
+      const idx = parseInt(opt.dataset.idx);
+      // Optimistic visual
+      document.querySelectorAll('.quiz-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      playSelect();
+      // Submit quiz answer
+      await submitQuizAnswer(idx);
+    });
+  }
+
+  // Card handlers
+  $('#cardsGrid').addEventListener('click', e => {
+    const card = e.target.closest('.card');
+    if (!card || card.classList.contains('disabled') || alreadySubmitted) return;
+    const cardId = card.dataset.cardId;
+    selectCard(cardId);
+  });
+
+  $('#submitCardBtn').addEventListener('click', async () => {
+    if (alreadySubmitted) return;
+    await submitCard();
+  });
+
+  refreshSubmitList();
+  startDeployTimer();
+  playPulse();
+  setFooter(flavorPick('preRoll'));
+}
+
+function refreshPlaying(){
+  const room = localState.room;
+  const team = getMyTeam();
+  if (!team || !room || !room.round) return;
+  refreshSubmitList();
+
+  // Update the submit button state if my submission just landed in state
+  const subs = (room.submissions && room.submissions[room.round.index]) || {};
+  const mySub = subs[team.id];
+  if (mySub && mySub.card){
+    const btn = $('#submitCardBtn');
+    if (btn && !btn.disabled){
+      btn.disabled = true;
+      btn.textContent = '✓ Submitted';
+    }
+  }
+}
+
+function refreshSubmitList(){
+  const room = localState.room;
+  if (!room || !room.round) return;
+  const teams = extractTeams(room);
+  const subs = (room.submissions && room.submissions[room.round.index]) || {};
+  const list = $('#submitList');
+  if (!list) return;
+  list.innerHTML = '';
+  teams.forEach(t => {
+    const s = subs[t.id];
+    const submitted = !!(s && s.card);
+    const row = document.createElement('div');
+    row.className = 't-row';
+    const chipClass = t.connected === false ? 'offline' : (submitted ? 'done' : 'pending');
+    const chipText = t.connected === false ? 'Offline' : (submitted ? 'Locked' : 'Thinking');
+    const isMe = t.id === localState.myTeamId ? ' <span style="color:var(--cyan);font-size:9px;margin-left:3px">YOU</span>' : '';
+    row.innerHTML = `<span><span class="cc" style="color:${t.color}">${escapeHtml(t.code)}</span>${escapeHtml(t.name)}${isMe}</span><span class="chip ${chipClass}">${chipText}</span>`;
+    list.appendChild(row);
+  });
+}
+
+function renderCardCell(card, team, mySub, alreadySubmitted){
+  const cooldown = (team.cooldowns || {})[card.id] || 0;
+  const gameUsedUp = card.gameLimit && (team.sabotagesUsed || 0) >= card.gameLimit;
+  const isDisabled = cooldown > 0 || gameUsedUp || alreadySubmitted;
+  const isSelected = mySub?.card === card.id;
+  const cardColor = card.color;
+  let metaText = '';
+  if (gameUsedUp) metaText = 'USED UP';
+  else if (cooldown > 0) metaText = `CD ${cooldown}`;
+  else if (card.gameLimit) metaText = `${card.gameLimit - (team.sabotagesUsed||0)} LEFT`;
+  return `
+    <div class="card ${isDisabled ? 'disabled' : ''} ${isSelected ? 'selected' : ''}" data-card-id="${card.id}" style="--card-color:${cardColor}">
+      ${metaText ? `<div class="card-meta">${metaText}</div>` : ''}
+      <div class="card-icon">${card.icon}</div>
+      <div class="card-name">${card.name}</div>
+      <div class="card-tagline">${escapeHtml(card.tagline)}</div>
+      <div class="card-desc">${escapeHtml(card.desc)}</div>
+    </div>
+  `;
+}
+
+function selectCard(cardId){
+  const card = CARD_BY_ID[cardId];
+  if (!card) return;
+  playSelect();
+
+  document.querySelectorAll('.card').forEach(el => {
+    el.classList.toggle('selected', el.dataset.cardId === cardId);
+  });
+  localState.pendingSelection = cardId;
+
+  // If card needs target, show target chooser
+  const targetWrap = $('#targetWrap');
+  if (card.needsTarget){
+    const room = localState.room;
+    const teams = extractTeams(room).filter(t => t.id !== localState.myTeamId);
+    targetWrap.innerHTML = `
+      <div class="target-chooser">
+        <h5>CHOOSE A TARGET TO SABOTAGE</h5>
+        <div class="target-list">
+          ${teams.map(t => `<div class="target-opt" data-id="${t.id}"><span style="color:${t.color}">${escapeHtml(t.code)}</span> · ${escapeHtml(t.name)}</div>`).join('')}
+        </div>
+      </div>
+    `;
+    targetWrap.querySelectorAll('.target-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        targetWrap.querySelectorAll('.target-opt').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        localState.pendingTarget = el.dataset.id;
+        playSelect();
+      });
+    });
+  } else {
+    targetWrap.innerHTML = '';
+    localState.pendingTarget = null;
+  }
+}
+
+async function submitCard(){
+  const cardId = localState.pendingSelection;
+  const card = cardId ? CARD_BY_ID[cardId] : null;
+  if (!card){
+    const err = $('#submitErr');
+    err.textContent = 'Please select a card first.';
+    err.classList.remove('hidden');
+    return;
+  }
+  if (card.needsTarget && !localState.pendingTarget){
+    const err = $('#submitErr');
+    err.textContent = 'Sabotage requires a target.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  const team = getMyTeam();
+  const round = localState.room.round;
+  const sub = {
+    card: cardId,
+    target: localState.pendingTarget || null,
+    submittedAt: serverTimestamp()
+  };
+  await update(ref(localState.db, roomPath(localState.roomCode, `submissions/${round.index}/${team.id}`)), sub);
+  playCorrect();
+  const btn = $('#submitCardBtn');
+  if (btn){ btn.disabled = true; btn.textContent = '✓ Submitted'; }
+}
+
+async function submitQuizAnswer(idx){
+  const team = getMyTeam();
+  const round = localState.room.round;
+  const quiz = getQuiz(round.quizIdx);
+
+  // Update DB with quiz answer (merge with existing submission)
+  await update(ref(localState.db, roomPath(localState.roomCode, `submissions/${round.index}/${team.id}`)), {
+    quiz: idx
+  });
+
+  // Visual feedback
+  document.querySelectorAll('.quiz-opt').forEach((opt, i) => {
+    opt.style.pointerEvents = 'none';
+    if (i === quiz.answer) opt.classList.add('correct');
+    else if (i === idx) opt.classList.add('wrong');
+  });
+  if (idx === quiz.answer){
+    playCorrect();
+  } else {
+    playWrong();
+  }
+
+  // Show fact
+  setTimeout(() => {
+    const panel = $('#quizPanel');
+    if (panel){
+      const fact = document.createElement('div');
+      fact.className = 'sub';
+      fact.style.cssText = 'font-size:12.5px; color:var(--cyan); margin-top:12px; padding-top:10px; border-top:1px dashed var(--line); font-style:italic';
+      fact.textContent = quiz.fact;
+      panel.appendChild(fact);
+    }
+  }, 400);
+}
+
+function startDeployTimer(){
+  localState.deployCountdown = 60;
+  const update_timer = () => {
+    const fill = $('#timerFill');
+    const num = $('#timerNum');
+    if (!fill || !num) return;
+    const pct = Math.max(0, localState.deployCountdown / 60 * 100);
+    fill.style.width = pct + '%';
+    fill.classList.remove('warn','crit');
+    num.classList.remove('warn','crit');
+    if (localState.deployCountdown <= 10){
+      fill.classList.add('crit'); num.classList.add('crit');
+    } else if (localState.deployCountdown <= 20){
+      fill.classList.add('warn'); num.classList.add('warn');
+    }
+    num.textContent = localState.deployCountdown + 's';
+  };
+  update_timer();
+  localState.deployTimer = setInterval(() => {
+    localState.deployCountdown -= 1;
+    update_timer();
+    if (localState.deployCountdown <= 0){
+      clearInterval(localState.deployTimer);
+      localState.deployTimer = null;
+      // Auto-submit paddle if nothing selected
+      const team = getMyTeam();
+      const subs = (localState.room.submissions && localState.room.submissions[localState.room.round.index]) || {};
+      if (!subs[team.id] || !subs[team.id].card){
+        localState.pendingSelection = 'paddle';
+        submitCard().catch(e => console.error(e));
+      }
+    }
+  }, 1000);
+}
+
+function eventIcon(id){
+  return {
+    'ev_calm':'☀️','ev_spill':'🛢️','ev_bloom':'🦠','ev_rain':'🌧️',
+    'ev_patrol':'👮','ev_cleanup':'🧹','ev_dam':'💥','ev_fog':'🌫️'
+  }[id] || '🌀';
+}
+
+// =========================================================
+// RESOLUTION
+// =========================================================
+function renderResolution(){
+  if (localState.advanceTimer){ clearInterval(localState.advanceTimer); localState.advanceTimer = null; }
+  if (localState.deployTimer){ clearInterval(localState.deployTimer); localState.deployTimer = null; }
+
+  const room = localState.room;
+  const team = getMyTeam();
+  if (!room.round) return;
+  const teams = extractTeams(room);
+  const round = room.round;
+  const event = getEvent(round.eventId);
+  const quiz = getQuiz(round.quizIdx);
+  const resolutions = (room.resolutions && room.resolutions[round.index]) || {};
+  const totalRounds = room.meta.totalRounds || SCORING.maxRounds;
+
+  const someoneReachedDelta = teams.some(t => (t.position||0) >= SCORING.deltaTile);
+  const isLast = (round.index + 1) >= totalRounds || someoneReachedDelta;
+
+  stage.innerHTML = `
+    <div class="panel" style="padding:16px 20px">
+      <div class="kicker">Round ${round.index+1}/${totalRounds} · RESOLVED</div>
+      <h2 class="panel-title" style="margin:4px 0 4px">${escapeHtml(event.name)}</h2>
+      <p class="sub" style="font-style:italic; color:var(--cyan)">${flavorPick('reveal')}</p>
+    </div>
+
+    <div id="boardMount"></div>
+
+    <div class="reveal-stage">
+      <div class="kicker">Card reveal</div>
+      <h3 class="logo-type" style="font-size:18px; margin:4px 0 4px; color:var(--cyan)">WHAT EVERYONE PLAYED</h3>
+      <p class="sub" style="margin-bottom:12px">Results below. Full card reveal for every crew.</p>
+
+      <div class="reveal-teams">
+        ${teams.sort((a,b) => (b.position||0) - (a.position||0)).map((t, i) => renderRevealCard(t, resolutions[t.id], t.id === localState.myTeamId, i)).join('')}
+      </div>
+    </div>
+
+    <div class="panel" style="padding:16px 20px">
+      <div class="kicker">Quiz answer</div>
+      <h4 class="logo-type" style="font-size:14px; color:var(--mint); margin:4px 0 6px">${escapeHtml(quiz.q)}</h4>
+      <p class="sub" style="font-weight:600; color:var(--mint)">✓ ${escapeHtml(quiz.opts[quiz.answer])}</p>
+      <p class="sub" style="font-style:italic; color:var(--cyan); margin-top:6px">${escapeHtml(quiz.fact)}</p>
+    </div>
+
+    <div class="row" style="justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:22px">
+      <div class="sub mono" style="font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--mute)">${isLast ? 'Final standings in' : 'Next round in'} <b id="countdownNum" style="color:var(--mint); font-size:18px; font-family:'Bungee',sans-serif">12</b>s</div>
+      <button class="primary" id="continueBtn">${isLast ? 'End race now →' : 'Continue →'}</button>
+    </div>
+  `;
+
+  $('#boardMount').appendChild(renderBoard(teams, localState.myTeamId));
+
+  // Card reveal sounds
+  setTimeout(() => playReveal(), 100);
+
+  $('#continueBtn').addEventListener('click', async () => {
+    playTransition();
+    if (localState.advanceTimer){ clearInterval(localState.advanceTimer); localState.advanceTimer = null; }
+    await tryAutoAdvance();
+  });
+
+  localState.advanceCountdown = 12;
+  $('#countdownNum').textContent = String(localState.advanceCountdown);
+  localState.advanceTimer = setInterval(async () => {
+    localState.advanceCountdown -= 1;
+    const n = $('#countdownNum');
+    if (n) n.textContent = String(Math.max(0, localState.advanceCountdown));
+    if (localState.advanceCountdown <= 0){
+      clearInterval(localState.advanceTimer);
+      localState.advanceTimer = null;
+      await tryAutoAdvance();
+    }
+  }, 1000);
+
+  setFooter(flavorPick('generic'));
+}
+
+function renderRevealCard(team, res, isMe, idx){
+  if (!res) return `
+    <div class="reveal-card ${isMe ? 'me' : ''}">
+      <h5 style="color:${team.color}">${escapeHtml(team.code)} · ${escapeHtml(team.name)}</h5>
+      <p class="sub" style="font-size:12px">No card played.</p>
+    </div>
+  `;
+  const card = res.cardPlayed ? CARD_BY_ID[res.cardPlayed] : null;
+  const sabotaged = res.sabotageReceived;
+  const winner = res.newPos >= SCORING.deltaTile;
+  const moveDelta = res.newPos - res.oldPos;
+
+  return `
+    <div class="reveal-card ${isMe ? 'me' : ''} ${sabotaged ? 'sabotaged' : ''} ${winner ? 'winner' : ''}" style="animation-delay:${idx * 0.12}s">
+      <h5 style="color:${team.color}">${escapeHtml(team.code)} · ${escapeHtml(team.name)}${isMe ? ' <span style="color:var(--cyan);font-size:10px">(YOU)</span>' : ''}</h5>
+      ${card ? `
+        <div class="rc-card" style="--card-color:${card.color}">
+          <span class="rc-icon">${card.icon}</span>
+          <span class="rc-name">${card.name}</span>
+        </div>
+      ` : ''}
+      <ul class="rc-events">
+        ${(res.events || []).map(e => `<li class="${e.kind}">${escapeHtml(e.text)}</li>`).join('')}
+      </ul>
+      <div class="rc-move">
+        <span>Pos: ${res.oldPos} → <b>${res.newPos}</b></span>
+        <span>Tokens: <b>+${res.tokensDelta}</b></span>
+        ${winner ? '<span style="color:var(--mint); font-family: Bungee, sans-serif; font-size: 11px">🏁 DELTA</span>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+// =========================================================
+// FINAL
+// =========================================================
+function renderFinal(){
+  if (localState.advanceTimer){ clearInterval(localState.advanceTimer); localState.advanceTimer = null; }
+  if (localState.deployTimer){ clearInterval(localState.deployTimer); localState.deployTimer = null; }
+
+  const room = localState.room;
+  const team = getMyTeam();
+  const teams = extractTeams(room);
+  const sorted = [...teams].sort((a,b) => finalScore(b) - finalScore(a));
+  const top3 = sorted.slice(0, 3);
+  const remaining = sorted.slice(3);
+  const myRank = team ? sorted.findIndex(t => t.id === team.id) + 1 : 0;
+
+  const deltaWinner = sorted.find(t => (t.position||0) >= SCORING.deltaTile);
+
+  stage.innerHTML = `
+    <div class="panel">
+      <div class="kicker">FINAL STANDINGS</div>
+      <h1 class="display-title logo-type" data-subtitle="${deltaWinner ? 'DELTA REACHED' : 'ROUND LIMIT · FURTHEST WINS'}" style="font-size:clamp(40px,8vw,80px); margin: 12px 0 16px">THE END</h1>
+      ${team ? `<p class="sub">Your crew <b>${escapeHtml(team.code)} · ${escapeHtml(team.name)}</b> finished <b style="color:${rankColor(myRank)}">#${myRank}</b> with <b>${finalScore(team)}</b> points.</p>` : ''}
+      <p class="sub" style="font-style:italic; color:var(--cyan); margin-top:6px">${flavorPick('win')}</p>
+
+      <div class="podium">
+        ${top3[1] ? renderPod(top3[1], 2, 'second') : '<div></div>'}
+        ${top3[0] ? renderPod(top3[0], 1, 'first')  : '<div></div>'}
+        ${top3[2] ? renderPod(top3[2], 3, 'third')  : '<div></div>'}
+      </div>
+
+      ${remaining.length > 0 ? `
+        <h4 class="logo-type" style="font-size:14px; color:var(--cyan); margin:22px 0 10px">OTHER POSITIONS</h4>
+        <div class="final-table">
+          ${remaining.map((t,i) => `
+            <div class="final-row ${team && t.id===team.id ? 'me' : ''}">
+              <span class="pos">#${i+4}</span>
+              <span class="cc" style="color:${t.color}">${escapeHtml(t.code)}</span>
+              <span class="nm">${escapeHtml(t.name)}</span>
+              <span class="sc">${finalScore(t)} pts</span>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <hr class="div">
+      <h4 class="logo-type" style="font-size:13px; color:var(--mute); margin-bottom: 6px">SCORING BREAKDOWN</h4>
+      <p class="sub mono" style="font-size:11.5px; line-height: 1.7">
+        · ${SCORING.pointsPerTile} points per tile reached<br>
+        · ${SCORING.pointsPerToken} point per cleanup token<br>
+        · +${SCORING.deltaBonus} points for reaching the Delta
+      </p>
+
+      <div class="row" style="margin-top:22px; justify-content:flex-end">
+        <button class="secondary" id="newGameBtn">Leave & start new race</button>
+      </div>
+    </div>
+  `;
+
+  $('#newGameBtn').addEventListener('click', () => { playClick(); leaveRoom(); });
+  playFanfare();
+  setFooter(flavorPick('generic'));
+}
+
+function rankColor(r){
+  return r === 1 ? 'var(--yellow)' : r === 2 ? 'var(--cyan)' : r === 3 ? 'var(--orange)' : 'var(--ink)';
+}
+
+function renderPod(team, rank, cls){
+  const numeral = ['','I','II','III'][rank];
+  return `
+    <div class="pod ${cls}">
+      <div class="rank">${numeral}</div>
+      <div class="name">${escapeHtml(team.name)}</div>
+      <div class="country-tag" style="color:${team.color}">${escapeHtml(team.code)}</div>
+      <div class="score">${finalScore(team)}</div>
+    </div>
+  `;
+}
+
+// =========================================================
+// LEAVE
+// =========================================================
+async function leaveRoom(){
+  if (localState.advanceTimer){ clearInterval(localState.advanceTimer); localState.advanceTimer = null; }
+  if (localState.deployTimer){ clearInterval(localState.deployTimer); localState.deployTimer = null; }
+  if (localState.myTeamId && localState.roomCode){
+    try { await update(ref(localState.db, roomPath(localState.roomCode, `teams/${localState.myTeamId}`)), { connected: false }); } catch(e){}
+  }
+  unsubscribeAll();
+  localState.roomCode = null;
+  localState.myTeamId = null;
+  localState.room = null;
+  setSyncStatus('offline', 'Offline');
+  $('#syncPill').classList.add('hidden');
+  $('#leaveBtn').classList.add('hidden');
+  try { history.replaceState({}, '', location.pathname); } catch(e){}
+  go('home', renderHome);
+}
+
+// =========================================================
+// HEADER HANDLERS
+// =========================================================
+$('#audioToggle').addEventListener('click', () => {
+  localState.audioEnabled = !localState.audioEnabled;
+  $('#audioToggle').textContent = 'Sound: ' + (localState.audioEnabled ? 'On' : 'Off');
+  if (localState.audioEnabled) unlockAudio();
+});
+
+$('#howToBtn').addEventListener('click', () => {
+  unlockAudio(); playClick();
+  openModal(`
+    <h3>HOW TO PLAY</h3>
+    <p class="sub">Chaos, cards, rivers, nonsense. Fifteen minutes.</p>
+    <ol>
+      <li><strong>CREATE OR JOIN</strong><p>One team creates a room, others join with the 4-letter code. Any crew starts once ≥2 are ready.</p></li>
+      <li><strong>EVERY ROUND</strong><p>Pick ONE card from your hand of 6. A water-science quiz gets you +1 token if you answer correctly.</p></li>
+      <li><strong>CARDS REVEAL</strong><p>Everyone's cards flip simultaneously. Shields activate first, then sabotages, then movements. Brakes, scoops, everything resolves.</p></li>
+      <li><strong>HAZARDS ON TILES</strong><p>The river has whirlpools, oil slicks, debris fields, plastic patches. Landing on them helps or hurts.</p></li>
+      <li><strong>WIN</strong><p>First crew to tile 30 (the Delta) gets +10 points. If nobody reaches it in 10 rounds, furthest wins.</p></li>
+    </ol>
+    <hr class="div">
+    <p class="sub"><b>Card tips:</b></p>
+    <p class="sub">· <b>SPRINT</b> is fast but vulnerable. <b>SHIELD</b> blocks sabotage. <b>SABOTAGE</b> is limited (3 per game). <b>SCOOP</b> trades movement for tokens. <b>BRAKE</b> locks you for 2 rounds of immunity.</p>
+    <hr class="div">
+    <p class="sub"><b>Scoring:</b> 2 pts per tile · 1 pt per token · +10 for reaching Delta.</p>
+    <div class="row end-right" style="margin-top:12px"><button class="primary" id="closeHow">Got it</button></div>
+  `);
+  $('#closeHow').addEventListener('click', closeModal);
+});
+
+$('#leaveBtn').addEventListener('click', () => {
+  openModal(`
+    <h3>LEAVE RACE?</h3>
+    <p class="sub">You will be disconnected. The other crews can continue without you.</p>
+    <div class="row end-right" style="margin-top:12px">
+      <button class="ghost" id="cancelLeave">Cancel</button>
+      <button class="danger" id="confirmLeave">Leave</button>
+    </div>
+  `);
+  $('#cancelLeave').addEventListener('click', closeModal);
+  $('#confirmLeave').addEventListener('click', () => { closeModal(); leaveRoom(); });
+});
+
+// =========================================================
+// BOOT
+// =========================================================
+function detectMode(){
+  const url = new URL(location.href);
+  const room = (url.searchParams.get('room') || '').toUpperCase().trim();
+  if (room && /^[A-Z2-9]{4}$/.test(room)) return { mode:'join', room };
+  return { mode:'home' };
+}
+
+async function boot(){
+  const detected = detectMode();
+  if (detected.mode === 'join'){
+    const saved = sessionStorage.getItem(`wipeout.team.${detected.room}`);
+    if (saved){
+      try {
+        await initFirebase(FIREBASE_CONFIG);
+        setSyncStatus('online', 'Live');
+        $('#syncPill').classList.remove('hidden');
+        $('#leaveBtn').classList.remove('hidden');
+        const parsed = JSON.parse(saved);
+        const teamSnap = await get(ref(localState.db, roomPath(detected.room, `teams/${parsed.teamId}`)));
+        if (teamSnap.exists()){
+          localState.roomCode = detected.room;
+          localState.myTeamId = parsed.teamId;
+          const teamRef = ref(localState.db, roomPath(detected.room, `teams/${parsed.teamId}`));
+          await update(teamRef, { connected: true, uid: localState.myUid });
+          onDisconnect(teamRef).update({ connected: false });
+          subscribe(roomPath(detected.room), data => {
+            localState.room = data;
+            setSyncStatus('online', 'Live');
+            onRoomUpdate();
+          });
+          return;
+        } else {
+          sessionStorage.removeItem(`wipeout.team.${detected.room}`);
+        }
+      } catch(err){ console.error('Reconnect failed:', err); }
+    }
+    go('picker', () => renderStationPicker('join', detected.room));
+  } else {
+    go('home', renderHome);
+  }
+}
+
+boot();
+
+
+</script>
+</body>
+</html>
