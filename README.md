@@ -2,7 +2,7 @@
 
 **A vibrant, chaotic river-race card game for the eTwinning project *Guardians of our Waters*.**
 
-**[▶ Play live](https://physicsplay.github.io/Wipeout-game/)** — works in any modern browser, on any device. No installation, no accounts, no downloads.
+**[▶ Play live](https://physicsplay.github.io/wipe_out/)** — works in any modern browser, on any device. No installation, no accounts, no downloads.
 
 ---
 
@@ -45,11 +45,11 @@ When everyone locks in their card (or the 60-second timer runs out), cards revea
 
 30 tiles divided into 5 themed segments:
 
-- **Alpine Source** (1-6) — calm, cold, safe
-- **The Rapids** (7-12) — fast water, hazards start appearing
-- **Industrial Zone** (13-18) — oil slicks and debris fields; high risk, high reward
-- **The Reeds** (19-24) — slow tangles, wildlife, sudden reeds
-- **The Delta** (25-30) — the finish line
+- **Alpine Source** (1–6) — calm, cold, safe
+- **The Rapids** (7–12) — fast water, hazards start appearing
+- **Industrial Zone** (13–18) — oil slicks and debris fields; high risk, high reward
+- **The Reeds** (19–24) — slow tangles, wildlife, sudden reeds
+- **The Delta** (25–30) — the finish line
 
 Specific tiles have hazards: whirlpools (random ±2 tiles), oil slicks (-1 token), debris fields (+2 tokens), plastic patches (slow you next round), sandbars (-1 tile). Some tiles help, some hurt — positioning matters.
 
